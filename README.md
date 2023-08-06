@@ -5,7 +5,8 @@ This is a SaaS implementation sample using the SaaSus Platform SDK
 ## Run React Front
 
 ```
-cd ./front
+git clone git@github.com:saasus-platform/implementation-sample-front-react.git
+cd ./implementation-sample-front-react
 cp ./.env.example .env
 ```
 
