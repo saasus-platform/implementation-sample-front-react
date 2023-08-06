@@ -1,6 +1,6 @@
 # implementation-sample-front-react
 
-This is a SaaS implementation sample using the SaaSus Platform SDK
+This is a SaaS implementation sample using the SaaSus SDK
 
 ## Run React Front
 
