@@ -51,13 +51,17 @@ const Callback = () => {
   };
 
   useEffect(() => {
-    if (code) {
-      getToken();
-      navigateByRole();
-    } else {
-      window.location.href = LOGIN_URL;
-    }
-  }, [navigate]);
+    const startCallback = async () => {
+      if (code) {
+        await getToken();
+        navigateByRole();
+      } else {
+        window.location.href = LOGIN_URL;
+      }
+    };
+
+    startCallback();
+  }, []);
 
   return <></>;
 };
