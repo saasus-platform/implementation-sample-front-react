@@ -6,10 +6,10 @@ const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
 // ユーザ一覧取得
 const UserPage = () => {
   const [users, setUsers] = useState<any>();
-  const [myPlan, setMyPlan] = useState<any>();
+  const [userinfo, setUserinfo] = useState<any>();
+  const jwtToken = window.localStorage.getItem("SaaSusIdToken");
 
   const getUsers = async () => {
-    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
     const res = await axios.get(`${API_ENDPOINT}/users`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -17,15 +17,12 @@ const UserPage = () => {
       },
       withCredentials: true,
     });
-    // 取得したユーザ一覧をコンソールに表示
     console.log(res.data);
     setUsers(res.data);
   };
 
-  // ロールによって遷移先を振り分け
-  const GetMyPlan = async () => {
-    // ロールの取得
-    const jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  // ログインユーザの情報を取得
+  const GetUserinfo = async () => {
     const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -35,19 +32,34 @@ const UserPage = () => {
     });
 
     console.log(res.data);
-    setMyPlan(res.data.tenants[0].plan_id);
+    setUserinfo(res.data);
   };
 
   useEffect(() => {
     getUsers();
-    GetMyPlan();
+    GetUserinfo();
   }, []);
 
   return (
     <>
-      <label>料金プラン：{myPlan ? myPlan : "未設定"}</label>
+      ログインユーザの情報
+      <br />
+      名前：
+      {userinfo?.tenants[0].user_attribute.name}
+      <br />
+      メールアドレス：
+      {userinfo?.email}
+      <br />
+      ロール：
+      {userinfo?.tenants[0].envs[2].roles[0].display_name}
+      <br />
+      料金プラン：
+      {userinfo?.tenants[0].plan_id ? userinfo?.tenants[0].plan_id : "未設定"}
       <br />
       <br />
+      <br />
+      <br />
+      ユーザ一覧
       <table>
         <thead>
           <tr>
@@ -63,8 +75,8 @@ const UserPage = () => {
               <tr key={user.id}>
                 <td>{user.tenant_name}</td>
                 <td>{user.id}</td>
-                <td>{user.email}</td>
                 <td>{user.attributes.name}</td>
+                <td>{user.email}</td>
               </tr>
             );
           })}
