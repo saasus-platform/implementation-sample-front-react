@@ -51,7 +51,7 @@ const UserPage = () => {
       {userinfo?.email}
       <br />
       ロール：
-      {userinfo?.tenants[0].envs[2].roles[0].display_name}
+      {userinfo?.tenants[0].envs[0].roles[0].display_name}
       <br />
       料金プラン：
       {userinfo?.tenants[0].plan_id ? userinfo?.tenants[0].plan_id : "未設定"}
