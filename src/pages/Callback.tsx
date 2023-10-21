@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
@@ -9,6 +10,7 @@ const Callback = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const code = new URLSearchParams(location.search).get("code");
+  const [, setCookie] = useCookies(["SaaSusRefreshToken"]);
 
   // JWTを取得してLocal Storageに保存
   const getToken = async () => {
@@ -22,6 +24,10 @@ const Callback = () => {
     // JWTをLocal Storageに保存
     const idToken = res.data.id_token;
     localStorage.setItem("SaaSusIdToken", idToken);
+
+    // リフレッシュトークンをCookieに保存
+    const refreshToken = res.data.refresh_token;
+    setCookie("SaaSusRefreshToken", refreshToken);
   };
 
   // ロールによって遷移先を振り分け
