@@ -30,25 +30,17 @@ const UserPage = () => {
     // デコードしたJWTの有効期限チェック
     // JWTの有効期限が切れている場合は新しいトークンを取得する
     const expireDate = decoded["exp"] as number;
-    const expireDate2 = (decoded["exp"] as number) - 30;
     const timestamp = parseInt(Date.now().toString().slice(0, 10));
-    console.log("expireDate:");
-    console.log(expireDate);
-    console.log("expireDate2:");
-    console.log(expireDate2);
     if (expireDate <= timestamp) {
       try {
-        console.log("refreshtoken");
+        console.log("token expired");
         // リフレッシュトークンからJWT取得
-        const res = await axios.get(
-          `${API_ENDPOINT}/refresh?refreshtoken=${cookies.SaaSusRefreshToken}`,
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-            },
-            withCredentials: true,
-          }
-        );
+        const res = await axios.get(`${API_ENDPOINT}/refresh`, {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          withCredentials: true,
+        });
 
         // JWTをLocal Storageに保存
         jwtToken = res.data.id_token;
@@ -74,7 +66,6 @@ const UserPage = () => {
       },
       withCredentials: true,
     });
-    console.log(res.data);
     setUsers(res.data);
   };
 
@@ -88,7 +79,6 @@ const UserPage = () => {
       withCredentials: true,
     });
 
-    console.log(res.data);
     setUserinfo(res.data);
   };
 
