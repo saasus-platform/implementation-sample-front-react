@@ -10,6 +10,9 @@ const sleep = (second: number) =>
 const UserPage = () => {
   const [users, setUsers] = useState<any>();
   const [userinfo, setUserinfo] = useState<any>();
+  const [userAttributes, setUserAttributes] = useState<any>();
+  const [tenantId, setTenantId] = useState<any>();
+  const [tenantUserInfo, setTenantUserInfo] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const [cookies] = useCookies(["SaaSusRefreshToken"]);
 
@@ -58,19 +61,22 @@ const UserPage = () => {
   };
 
   // ユーザ一覧取得
-  const getUsers = async () => {
+  const getUsers = async (tenantId:any) => {
     const res = await axios.get(`${API_ENDPOINT}/users`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
       },
       withCredentials: true,
+      params: {
+        tenant_id: tenantId
+      }
     });
     setUsers(res.data);
   };
 
   // ログインユーザの情報を取得
-  const GetUserinfo = async () => {
+  const GetUserinfo = async (tenantId:any) => {
     const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -79,14 +85,40 @@ const UserPage = () => {
       withCredentials: true,
     });
 
+    res.data.tenants.map((tenant:any, index:any) => {
+      if (tenant.id === tenantId) {
+        setTenantUserInfo(tenant);
+      }
+    });
+
     setUserinfo(res.data);
   };
 
+  // ユーザー属性情報を取得
+  const GetuserAttributes = async () => {
+    const res = await axios.get(`${API_ENDPOINT}/user_attributes`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      withCredentials: true,
+    });
+
+    console.log(res.data.user_attributes)
+    setUserAttributes(res.data.user_attributes);
+  }
+
   useEffect(() => {
     const startUserPage = async () => {
+      // テナントIDをクエリパラメータから取得
+      const urlParams = new URLSearchParams(window.location.search);
+      const tenantIdFromQuery = urlParams.get('tenant_id');
+      setTenantId(tenantIdFromQuery);
+
       await idTokenCheck();
-      getUsers();
-      GetUserinfo();
+      getUsers(tenantIdFromQuery);
+      GetUserinfo(tenantIdFromQuery);
+      GetuserAttributes();
     };
 
     startUserPage();
@@ -96,29 +128,35 @@ const UserPage = () => {
     <>
       ログインユーザの情報
       <br />
+      テナント名：
+      {tenantUserInfo?.name}
+      <br />
       名前：
-      {userinfo?.tenants[0].user_attribute.name}
+      {tenantUserInfo?.user_attribute.name}
       <br />
       メールアドレス：
       {userinfo?.email}
       <br />
       ロール：
-      {userinfo?.tenants[0].envs[0].roles[0].display_name}
+      {tenantUserInfo?.envs[0].roles[0].display_name}
       <br />
       料金プラン：
-      {userinfo?.tenants[0].plan_id ? userinfo?.tenants[0].plan_id : "未設定"}
+      {tenantUserInfo?.plan_id ? tenantUserInfo.plan_id : "未設定"}
       <br />
       <br />
       <br />
       <br />
       ユーザ一覧
-      <table>
+      <table border={1} style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <td>テナントID</td>
             <td>UUID</td>
             <td>名前</td>
             <td>メールアドレス</td>
+            {userAttributes && Object.keys(userAttributes).map((key) => (
+              <td key={key}> {userAttributes[key].display_name}</td>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -129,6 +167,13 @@ const UserPage = () => {
                 <td>{user.id}</td>
                 <td>{user.attributes.name}</td>
                 <td>{user.email}</td>
+                {user.attributes && Object.keys(user.attributes).map((key, index) => (
+                  <td key={index}>
+                    {typeof user.attributes[key] === "boolean"
+                      ? user.attributes[key] ? "True" : "False"
+                      : user.attributes[key]}
+                  </td>
+                ))}
               </tr>
             );
           })}
