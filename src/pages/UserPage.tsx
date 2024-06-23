@@ -1,6 +1,8 @@
 import axios from "axios";
+import { userInfo } from "os";
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import { useNavigate } from 'react-router-dom';
 
 const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
@@ -12,9 +14,11 @@ const UserPage = () => {
   const [userinfo, setUserinfo] = useState<any>();
   const [userAttributes, setUserAttributes] = useState<any>();
   const [tenantId, setTenantId] = useState<any>();
+  const [userId, setUserId] = useState<any>();
   const [tenantUserInfo, setTenantUserInfo] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const [cookies] = useCookies(["SaaSusRefreshToken"]);
+  const navigate = useNavigate();
 
   // JWT格納用型定義
   type Jwt = {
@@ -104,7 +108,6 @@ const UserPage = () => {
       withCredentials: true,
     });
 
-    console.log(res.data.user_attributes)
     setUserAttributes(res.data.user_attributes);
   }
 
@@ -123,6 +126,29 @@ const UserPage = () => {
 
     startUserPage();
   }, []);
+
+  const handleDelete = async (userId: any) => {
+    try {
+      await axios.delete(
+        `${API_ENDPOINT}/user_delete`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+          data: {
+            tenantId: tenantId,
+            userId: userId,
+          },
+        }
+      );
+  
+      getUsers(tenantId);
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      window.location.href = LOGIN_URL;
+    }
+  };
 
   return (
     <>
@@ -157,28 +183,35 @@ const UserPage = () => {
             {userAttributes && Object.keys(userAttributes).map((key) => (
               <td key={key}> {userAttributes[key].display_name}</td>
             ))}
+            <td></td>
           </tr>
         </thead>
         <tbody>
-          {users?.map((user: any) => {
-            return (
-              <tr key={user.id}>
-                <td>{user.tenant_name}</td>
-                <td>{user.id}</td>
-                <td>{user.attributes.name}</td>
-                <td>{user.email}</td>
-                {user.attributes && Object.keys(user.attributes).map((key, index) => (
-                  <td key={index}>
-                    {typeof user.attributes[key] === "boolean"
-                      ? user.attributes[key] ? "True" : "False"
-                      : user.attributes[key]}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
+          {users?.map((user: any) => (
+            <tr key={user.id}>
+              <td>{user.tenant_name}</td>
+              <td>{user.id}</td>
+              <td>{user.attributes?.name ?? "　"}</td>
+              <td>{user.email}</td>
+              {userAttributes?.map((attribute: any) => (
+                <td key={attribute.attribute_name}>
+                  {user.attributes && user.attributes[attribute.attribute_name]
+                    ? typeof user.attributes[attribute.attribute_name] === "boolean"
+                    ? user.attributes[attribute.attribute_name] ? "True" : "False"
+                    : user.attributes[attribute.attribute_name]
+                    : "　"}
+                </td>
+              ))}
+              <td>
+                {tenantUserInfo && tenantUserInfo.envs && tenantUserInfo.envs[0].roles[0].role_name === 'admin' && (
+                  <button onClick={() => handleDelete(user.id)}>削除</button>
+                )}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
+      <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
     </>
   );
 };

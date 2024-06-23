@@ -3,6 +3,7 @@ import Auth from "./components/Auth";
 import Callback from "./pages/Callback";
 import UserPage from "./pages/UserPage";
 import TenantList from "./pages/TenantList";
+import UserRegister from "./pages/UserRegister";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/user/toppage" element={<UserPage />} />
           <Route path="/admin/toppage" element={<UserPage />} />
           <Route path="/sadmin/toppage" element={<UserPage />} />
+          <Route path="/user_register" element={<UserRegister />} />
         </Route>
       </Routes>
     </BrowserRouter>
