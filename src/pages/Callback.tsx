@@ -46,13 +46,35 @@ const Callback = () => {
     // ロールによって遷移先振り分け
     switch (role) {
       case "sadmin":
-        navigate("/sadmin/toppage");
+        navigate(`/sadmin/toppage?tenant_id=${res.data.tenants[0].id}`);
         break;
       case "admin":
-        navigate("/admin/toppage");
+        navigate(`/admin/toppage?tenant_id=${res.data.tenants[0].id}`);
         break;
       default:
-        navigate("/user/toppage");
+        navigate(`/user/toppage?tenant_id=${res.data.tenants[0].id}`);
+
+    }
+  };
+
+  // テナント一覧orユーザー一覧への遷移を判定
+  const navigateIsMultiTenant = async () => {
+    // userInfoの取得
+    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
+    const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      withCredentials: true,
+    });
+
+    const hasTenantLen = res.data.tenants.length;
+    if (hasTenantLen > 1) {
+      navigate('/tenants');
+    } else {
+      // シングルテナントであれば、ロールで遷移先を振り分け
+      navigateByRole();
     }
   };
 
@@ -60,7 +82,7 @@ const Callback = () => {
     const startCallback = async () => {
       if (code) {
         await getToken();
-        navigateByRole();
+        navigateIsMultiTenant();
       } else {
         window.location.href = LOGIN_URL;
       }
