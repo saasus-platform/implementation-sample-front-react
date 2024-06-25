@@ -212,6 +212,8 @@ const UserPage = () => {
         </tbody>
       </table>
       <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
+      <br />
+      <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
     </>
   );
 };

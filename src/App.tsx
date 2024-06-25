@@ -4,6 +4,7 @@ import Callback from "./pages/Callback";
 import UserPage from "./pages/UserPage";
 import TenantList from "./pages/TenantList";
 import UserRegister from "./pages/UserRegister";
+import DeleteUserLog from "./pages/DeleteUserLog";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/admin/toppage" element={<UserPage />} />
           <Route path="/sadmin/toppage" element={<UserPage />} />
           <Route path="/user_register" element={<UserRegister />} />
+          <Route path="/delete_user_log" element={<DeleteUserLog />} />
         </Route>
       </Routes>
     </BrowserRouter>
