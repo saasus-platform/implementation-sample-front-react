@@ -100,7 +100,7 @@ const UserRegister = () => {
       navigate(`/admin/toppage?tenant_id=${tenantId}`);
     } catch (error) {
       console.error("Error registering user:", error);
-      // window.location.href = LOGIN_URL;
+      window.location.href = LOGIN_URL;
     }
   };
 

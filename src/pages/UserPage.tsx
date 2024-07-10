@@ -16,6 +16,7 @@ const UserPage = () => {
   const [tenantId, setTenantId] = useState<any>();
   const [userId, setUserId] = useState<any>();
   const [tenantUserInfo, setTenantUserInfo] = useState<any>();
+  const [planInfo, setPlanInfo] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const [cookies] = useCookies(["SaaSusRefreshToken"]);
   const navigate = useNavigate();
@@ -89,13 +90,32 @@ const UserPage = () => {
       withCredentials: true,
     });
 
+    let planId = null;
     res.data.tenants.map((tenant:any, index:any) => {
       if (tenant.id === tenantId) {
         setTenantUserInfo(tenant);
+
+        if (tenant.plan_id !== null) {
+          planId = tenant.plan_id;
+        }
       }
     });
-
     setUserinfo(res.data);
+
+    if (planId !== null) {
+      const plan = await axios.get(`${API_ENDPOINT}/pricing_plan`, {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        withCredentials: true,
+        params: {
+          plan_id: planId
+        }
+      });
+      setPlanInfo(plan.data);
+    }
+    
   };
 
   // ユーザー属性情報を取得
@@ -166,8 +186,11 @@ const UserPage = () => {
       ロール：
       {tenantUserInfo?.envs[0].roles[0].display_name}
       <br />
-      料金プラン：
+      料金プランID：
       {tenantUserInfo?.plan_id ? tenantUserInfo.plan_id : "未設定"}
+      <br />
+      料金プラン名：
+      {planInfo?.display_name ? planInfo.display_name : "未設定"}
       <br />
       <br />
       <br />
@@ -212,6 +235,8 @@ const UserPage = () => {
         </tbody>
       </table>
       <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
+      <br />
+      <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
     </>
   );
 };
