@@ -102,7 +102,7 @@ const UserPage = () => {
     });
     setUserinfo(res.data);
 
-    if (planId !== null) {
+    if (planId !== null && planId !== undefined) {
       const plan = await axios.get(`${API_ENDPOINT}/pricing_plan`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
@@ -212,7 +212,7 @@ const UserPage = () => {
         <tbody>
           {users?.map((user: any) => (
             <tr key={user.id}>
-              <td>{user.tenant_name}</td>
+              <td>{user.tenant_id}</td>
               <td>{user.id}</td>
               <td>{user.attributes?.name ?? "　"}</td>
               <td>{user.email}</td>

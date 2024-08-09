@@ -147,7 +147,7 @@ const TenantList = () => {
                 <td>{tenant.name}</td>
                 {tenantInfo[tenantIndex] && Object.keys(tenantInfo[tenantIndex]).map((key) => (
                   <td key={key}>
-                    {tenantInfo[tenantIndex][key].attribute_type === 'bool'
+                    {tenantInfo[tenantIndex][key].attribute_type.toLowerCase() === 'bool'
                       ? tenantInfo[tenantIndex][key].value === true ? '設定済み' : '未設定'
                       : tenantInfo[tenantIndex][key].value}
                   </td>
