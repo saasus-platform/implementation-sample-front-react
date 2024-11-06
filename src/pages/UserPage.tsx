@@ -84,16 +84,11 @@ const UserPage = () => {
       withCredentials: true,
     });
 
-    let planId = null;
-    res.data.tenants.map((tenant: any, index: any) => {
-      if (tenant.id === tenantId) {
-        setTenantUserInfo(tenant);
-
-        if (tenant.plan_id !== null) {
-          planId = tenant.plan_id;
-        }
-      }
-    });
+    const tenant = res.data.tenants.find(
+      (tenant: any) => tenant.id === tenantId
+    );
+    const planId = tenant?.plan_id;
+    setTenantUserInfo(tenant);
     setUserinfo(res.data);
 
     if (planId !== null && planId !== undefined) {
@@ -112,7 +107,7 @@ const UserPage = () => {
   };
 
   // ユーザー属性情報を取得
-  const GetuserAttributes = async () => {
+  const GetUserAttributes = async () => {
     const res = await axios.get(`${API_ENDPOINT}/user_attributes`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -134,7 +129,7 @@ const UserPage = () => {
       await idTokenCheck();
       getUsers(tenantIdFromQuery);
       GetUserinfo(tenantIdFromQuery);
-      GetuserAttributes();
+      GetUserAttributes();
     };
 
     startUserPage();

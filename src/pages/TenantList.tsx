@@ -91,13 +91,10 @@ const TenantList = () => {
         },
         withCredentials: true,
       });
-      const role = res.data.tenants[0].envs[0].roles[0].role_name;
 
-      res.data.tenants.map((tenant: any, index: any) => {
-        if (tenant.id === tenantId) {
-          const role = tenant.envs[0].roles[0].role_name;
-        }
-      });
+      const role = res.data.tenants.find(
+        (tenant: any) => tenant.id === tenantId
+      ).envs[0].roles[0].role_name;
 
       // リダイレクト
       switch (role) {

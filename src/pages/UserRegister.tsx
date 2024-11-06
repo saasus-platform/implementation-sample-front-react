@@ -51,7 +51,7 @@ const UserRegister = () => {
   };
 
   // ユーザー属性情報を取得
-  const GetuserAttributes = async () => {
+  const GetUserAttributes = async () => {
     const res = await axios.get(`${API_ENDPOINT}/user_attributes`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -70,7 +70,7 @@ const UserRegister = () => {
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
       await idTokenCheck();
-      GetuserAttributes();
+      GetUserAttributes();
     };
 
     startUserRegisterPage();
