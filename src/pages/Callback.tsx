@@ -53,7 +53,6 @@ const Callback = () => {
         break;
       default:
         navigate(`/user/toppage?tenant_id=${res.data.tenants[0].id}`);
-
     }
   };
 
@@ -71,7 +70,7 @@ const Callback = () => {
 
     const hasTenantLen = res.data.tenants.length;
     if (hasTenantLen > 1) {
-      navigate('/tenants');
+      navigate("/tenants");
     } else {
       // シングルテナントであれば、ロールで遷移先を振り分け
       navigateByRole();

@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
 const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";

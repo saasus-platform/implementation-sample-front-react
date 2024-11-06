@@ -1,8 +1,5 @@
 import axios from "axios";
-import { userInfo } from "os";
 import { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
-import { useNavigate } from 'react-router-dom';
 
 const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
@@ -12,10 +9,8 @@ const sleep = (second: number) =>
 const DeleteUserLog = () => {
   const [deleteUsers, setDeleteUsers] = useState<any>();
   const [userinfo, setUserinfo] = useState<any>();
-  const [userAttributes, setUserAttributes] = useState<any>();
   const [tenantId, setTenantId] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-  const [cookies] = useCookies(["SaaSusRefreshToken"]);
 
   type Jwt = {
     [name: string]: string | number | boolean;
@@ -53,7 +48,7 @@ const DeleteUserLog = () => {
   };
 
   // ユーザー削除ログを取得
-  const GetDeleteUsers = async (tenantId:any) => {
+  const GetDeleteUsers = async (tenantId: any) => {
     const res = await axios.get(`${API_ENDPOINT}/delete_user_log`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -62,8 +57,8 @@ const DeleteUserLog = () => {
       withCredentials: true,
       params: {
         tenant_id: tenantId,
-        user_id: userinfo.id
-      }
+        user_id: userinfo.id,
+      },
     });
 
     setDeleteUsers(res.data);
@@ -71,14 +66,14 @@ const DeleteUserLog = () => {
 
   // ログインユーザの情報を取得
   const GetUserinfo = async () => {
-      const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
-          headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          },
-          withCredentials: true,
-      });
-      setUserinfo(res.data);
+    const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      withCredentials: true,
+    });
+    setUserinfo(res.data);
   };
 
   const formatDate = (dateString: string) => {
@@ -97,7 +92,7 @@ const DeleteUserLog = () => {
     const startUserPage = async () => {
       // テナントIDをクエリパラメータから取得
       const urlParams = new URLSearchParams(window.location.search);
-      const tenantIdFromQuery = urlParams.get('tenant_id');
+      const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
 
       await idTokenCheck();
@@ -116,7 +111,7 @@ const DeleteUserLog = () => {
   return (
     <>
       削除ユーザ一覧
-      <table border={1} style={{ borderCollapse: 'collapse' }}>
+      <table border={1} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <td>テナントID</td>

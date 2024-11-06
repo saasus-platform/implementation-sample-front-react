@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
@@ -12,7 +11,6 @@ const TenantList = () => {
   const [tenants, setTenants] = useState<any>();
   const [tenantInfo, setTenantInfo] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-  const [cookies] = useCookies(["SaaSusRefreshToken"]);
   const navigate = useNavigate();
 
   type Jwt = {
@@ -60,27 +58,29 @@ const TenantList = () => {
       withCredentials: true,
     });
 
-    const tenantInfo = await Promise.all(res.data.tenants.map(async (tenant:any) => {
-      const res = await axios.get(`${API_ENDPOINT}/tenant_attributes`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        withCredentials: true,
-        params: {
-          tenant_id: tenant.id,
-        },
-      });
+    const tenantInfo = await Promise.all(
+      res.data.tenants.map(async (tenant: any) => {
+        const res = await axios.get(`${API_ENDPOINT}/tenant_attributes`, {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+          params: {
+            tenant_id: tenant.id,
+          },
+        });
 
-      return res.data;
-    }));
+        return res.data;
+      })
+    );
 
     console.log(tenantInfo);
     setTenants(res.data.tenants);
     setTenantInfo(tenantInfo);
   };
 
-  const handleUserListClick = async (tenantId:any) => {
+  const handleUserListClick = async (tenantId: any) => {
     try {
       // ロールの取得
       const jwtToken = window.localStorage.getItem("SaaSusIdToken");
@@ -93,7 +93,7 @@ const TenantList = () => {
       });
       const role = res.data.tenants[0].envs[0].roles[0].role_name;
 
-      res.data.tenants.map((tenant:any, index:any) => {
+      res.data.tenants.map((tenant: any, index: any) => {
         if (tenant.id === tenantId) {
           const role = tenant.envs[0].roles[0].role_name;
         }
@@ -112,7 +112,7 @@ const TenantList = () => {
           break;
       }
     } catch (error) {
-      console.error('Error fetching user list:', error);
+      console.error("Error fetching user list:", error);
     }
   };
 
@@ -128,14 +128,16 @@ const TenantList = () => {
   return (
     <>
       テナント一覧
-      <table border={1} style={{ borderCollapse: 'collapse' }}>
+      <table border={1} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <td>テナントID</td>
             <td>テナント名</td>
-            {tenantInfo && tenantInfo.length > 0 && Object.keys(tenantInfo[0]).map((key, index) => (
-              <td key={index}>{tenantInfo[0][key].display_name}</td>
-            ))}
+            {tenantInfo &&
+              tenantInfo.length > 0 &&
+              Object.keys(tenantInfo[0]).map((key, index) => (
+                <td key={index}>{tenantInfo[0][key].display_name}</td>
+              ))}
             <td></td>
           </tr>
         </thead>
@@ -145,13 +147,18 @@ const TenantList = () => {
               <tr key={tenant.id}>
                 <td>{tenant.id}</td>
                 <td>{tenant.name}</td>
-                {tenantInfo[tenantIndex] && Object.keys(tenantInfo[tenantIndex]).map((key) => (
-                  <td key={key}>
-                    {tenantInfo[tenantIndex][key].attribute_type.toLowerCase() === 'bool'
-                      ? tenantInfo[tenantIndex][key].value === true ? '設定済み' : '未設定'
-                      : tenantInfo[tenantIndex][key].value}
-                  </td>
-                ))}
+                {tenantInfo[tenantIndex] &&
+                  Object.keys(tenantInfo[tenantIndex]).map((key) => (
+                    <td key={key}>
+                      {tenantInfo[tenantIndex][
+                        key
+                      ].attribute_type.toLowerCase() === "bool"
+                        ? tenantInfo[tenantIndex][key].value === true
+                          ? "設定済み"
+                          : "未設定"
+                        : tenantInfo[tenantIndex][key].value}
+                    </td>
+                  ))}
                 <td>
                   <button onClick={() => handleUserListClick(tenant.id)}>
                     ユーザ一覧に移動
