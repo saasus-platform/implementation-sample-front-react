@@ -1,10 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-
-const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
-const sleep = (second: number) =>
-  new Promise((resolve) => setTimeout(resolve, second * 1000));
+import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { idTokenCheck } from "../utils";
 
 const UserPage = () => {
   const [users, setUsers] = useState<any>();
@@ -14,50 +11,6 @@ const UserPage = () => {
   const [tenantUserInfo, setTenantUserInfo] = useState<any>();
   const [planInfo, setPlanInfo] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-
-  // JWT格納用型定義
-  type Jwt = {
-    [name: string]: string | number | boolean;
-  };
-
-  // JWTのアップデート処理
-  const idTokenCheck = async () => {
-    // JWTのデコード
-    const base64Url = jwtToken.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(
-      decodeURIComponent(escape(window.atob(base64)))
-    ) as Jwt;
-
-    // デコードしたJWTの有効期限チェック
-    // JWTの有効期限が切れている場合は新しいトークンを取得する
-    const expireDate = decoded["exp"] as number;
-    const timestamp = parseInt(Date.now().toString().slice(0, 10));
-    if (expireDate <= timestamp) {
-      try {
-        console.log("token expired");
-        // リフレッシュトークンからJWT取得
-        const res = await axios.get(`${API_ENDPOINT}/refresh`, {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-          },
-          withCredentials: true,
-        });
-
-        // JWTをLocal Storageに保存
-        jwtToken = res.data.id_token;
-        localStorage.setItem("SaaSusIdToken", jwtToken);
-
-        // JWTを更新してすぐ使用すると、Token used before used エラーになるため。
-        // ref: https://github.com/dgrijalva/jwt-go/issues/383
-        await sleep(1);
-        return;
-      } catch (err) {
-        console.log(err);
-        window.location.href = LOGIN_URL;
-      }
-    }
-  };
 
   // ユーザ一覧取得
   const getUsers = async (tenantId: any) => {
@@ -126,7 +79,7 @@ const UserPage = () => {
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
 
-      await idTokenCheck();
+      await idTokenCheck(jwtToken);
       getUsers(tenantIdFromQuery);
       GetUserinfo(tenantIdFromQuery);
       GetUserAttributes();

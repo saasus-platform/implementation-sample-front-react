@@ -2,9 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-
-const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
+import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Callback = () => {
   const location = useLocation();

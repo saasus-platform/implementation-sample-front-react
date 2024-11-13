@@ -1,9 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-
-const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
+import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Auth = () => {
   // ログインユーザの情報を取得
