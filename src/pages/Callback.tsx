@@ -57,9 +57,8 @@ const Callback = () => {
     }
   };
 
-  // テナント一覧orユーザー一覧への遷移を判定
-  const navigateIsMultiTenant = async () => {
-    // userInfoの取得
+  // 遷移先判定
+  const handleUserNavigation = async () => {
     const jwtToken = window.localStorage.getItem("SaaSusIdToken");
     const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
       headers: {
@@ -70,7 +69,12 @@ const Callback = () => {
     });
 
     const hasTenantLen = res.data.tenants.length;
-    if (hasTenantLen > 1) {
+
+    if (hasTenantLen === 0) {
+      // ユーザーがテナントに紐づいていない場合、セルフサインアップ画面へ遷移
+      navigate('/self_sign_up');
+    } else if (hasTenantLen > 1) {
+      // テナントが複数ある場合、テナント選択画面へ遷移
       navigate('/tenants');
     } else {
       // シングルテナントであれば、ロールで遷移先を振り分け
@@ -82,7 +86,7 @@ const Callback = () => {
     const startCallback = async () => {
       if (code) {
         await getToken();
-        navigateIsMultiTenant();
+        await handleUserNavigation();
       } else {
         window.location.href = LOGIN_URL;
       }
