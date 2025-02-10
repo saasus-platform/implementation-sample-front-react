@@ -5,6 +5,7 @@ import UserPage from "./pages/UserPage";
 import TenantList from "./pages/TenantList";
 import UserRegister from "./pages/UserRegister";
 import DeleteUserLog from "./pages/DeleteUserLog";
+import SelfSignUp from "./pages/SelfSignUp";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/sadmin/toppage" element={<UserPage />} />
           <Route path="/user_register" element={<UserRegister />} />
           <Route path="/delete_user_log" element={<DeleteUserLog />} />
+          <Route path="/self_sign_up" element={<SelfSignUp />} />
         </Route>
       </Routes>
     </BrowserRouter>
