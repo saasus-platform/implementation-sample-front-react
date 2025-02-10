@@ -2,9 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-
-const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
+import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Callback = () => {
   const location = useLocation();
@@ -46,13 +44,38 @@ const Callback = () => {
     // ロールによって遷移先振り分け
     switch (role) {
       case "sadmin":
-        navigate("/sadmin/toppage");
+        navigate(`/sadmin/toppage?tenant_id=${res.data.tenants[0].id}`);
         break;
       case "admin":
-        navigate("/admin/toppage");
+        navigate(`/admin/toppage?tenant_id=${res.data.tenants[0].id}`);
         break;
       default:
-        navigate("/user/toppage");
+        navigate(`/user/toppage?tenant_id=${res.data.tenants[0].id}`);
+
+    }
+  };
+
+  // 遷移先判定
+  const handleUserNavigation = async () => {
+    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
+    const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      withCredentials: true,
+    });
+
+    const hasTenantLen = res.data.tenants.length;
+
+    if (hasTenantLen === 0) {
+      // ユーザーがテナントに紐づいていない場合、セルフサインアップ画面へ遷移
+      navigate('/self_sign_up');
+    } else if (hasTenantLen > 1) {
+      navigate("/tenants");
+    } else {
+      // シングルテナントであれば、ロールで遷移先を振り分け
+      navigateByRole();
     }
   };
 
@@ -60,7 +83,7 @@ const Callback = () => {
     const startCallback = async () => {
       if (code) {
         await getToken();
-        navigateByRole();
+        await handleUserNavigation();
       } else {
         window.location.href = LOGIN_URL;
       }
