@@ -2,9 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-
-const LOGIN_URL = process.env.REACT_APP_LOGIN_URL ?? "";
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT ?? "";
+import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Callback = () => {
   const location = useLocation();
@@ -74,8 +72,7 @@ const Callback = () => {
       // ユーザーがテナントに紐づいていない場合、セルフサインアップ画面へ遷移
       navigate('/self_sign_up');
     } else if (hasTenantLen > 1) {
-      // テナントが複数ある場合、テナント選択画面へ遷移
-      navigate('/tenants');
+      navigate("/tenants");
     } else {
       // シングルテナントであれば、ロールで遷移先を振り分け
       navigateByRole();
