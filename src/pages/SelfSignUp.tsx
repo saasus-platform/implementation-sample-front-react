@@ -7,7 +7,6 @@ import { idTokenCheck } from "../utils";
 
 
 const SelfSignup = () => {
-    const tenantId = useState<any>();
     const [userAttributes, setUserAttributes] = useState<any>();
     const [userAttributeValues, setUserAttributeValues] = useState<any>({});
     const [tenantName, setTenantName] = useState("");
