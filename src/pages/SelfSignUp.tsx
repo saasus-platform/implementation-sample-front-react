@@ -71,8 +71,7 @@ const SelfSignup = () => {
 	useEffect(() => {
         const startUserRegisterPage = async () => {
             await idTokenCheck(jwtToken);
-            GetUserAttributes();
-            GetTenantAttributes();
+            await Promise.all([GetUserAttributes(), GetTenantAttributes()]);
         };
 
         startUserRegisterPage();
