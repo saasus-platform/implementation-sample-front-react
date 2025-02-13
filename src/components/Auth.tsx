@@ -12,6 +12,7 @@ const Auth = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetUserInfo",
         },
         withCredentials: true,
       });

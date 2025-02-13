@@ -19,6 +19,7 @@ const UserRegister = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserAttributes",
       },
       withCredentials: true,
     });
@@ -55,6 +56,7 @@ const UserRegister = () => {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
             "Content-Type": "application/json",
+            "X-SaaSus-Referer": "handleSubmitUserRegist",
           },
           withCredentials: true,
         }
