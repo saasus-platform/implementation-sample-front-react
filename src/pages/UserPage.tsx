@@ -18,6 +18,7 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUsers",
       },
       withCredentials: true,
       params: {
@@ -33,6 +34,7 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserinfo",
       },
       withCredentials: true,
     });
@@ -49,6 +51,7 @@ const UserPage = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetPricingPlan",
         },
         withCredentials: true,
         params: {
@@ -65,6 +68,7 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserAttributes",
       },
       withCredentials: true,
     });
@@ -93,6 +97,7 @@ const UserPage = () => {
       await axios.delete(`${API_ENDPOINT}/user_delete`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "handleDeleteUser",
         },
         withCredentials: true,
         data: {

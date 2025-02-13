@@ -15,6 +15,7 @@ const DeleteUserLog = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetDeleteUsers",
       },
       withCredentials: true,
       params: {
@@ -32,6 +33,7 @@ const DeleteUserLog = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserinfo",
       },
       withCredentials: true,
     });

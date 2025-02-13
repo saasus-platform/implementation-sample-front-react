@@ -16,6 +16,7 @@ const TenantList = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserinfo",
       },
       withCredentials: true,
     });
@@ -26,6 +27,7 @@ const TenantList = () => {
           headers: {
             "X-Requested-With": "XMLHttpRequest",
             Authorization: `Bearer ${jwtToken}`,
+            "X-SaaSus-Referer": "GetTenantAttribute",
           },
           withCredentials: true,
           params: {
@@ -50,6 +52,7 @@ const TenantList = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetRole",
         },
         withCredentials: true,
       });
