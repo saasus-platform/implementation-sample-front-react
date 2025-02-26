@@ -7,8 +7,8 @@ import { idTokenCheck } from "../utils";
 const TenantList = () => {
   const [tenants, setTenants] = useState<any>();
   const [tenantInfo, setTenantInfo] = useState<any>();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const navigate = useNavigate();
+  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ログインユーザの情報と所属テナント情報を取得
   const GetUserinfo = async () => {
@@ -75,6 +75,32 @@ const TenantList = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${API_ENDPOINT}/logout`,
+        {},
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      window.localStorage.removeItem("SaaSusIdToken");
+
+      const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
+      if (loginUrl.startsWith("http")) {
+        window.location.href = loginUrl;
+      } else {
+        navigate(loginUrl);
+      }
+    } catch (error) {
+      console.error("ログアウトに失敗しました:", error);
+    }
+  };
+
   useEffect(() => {
     const startTenantListPage = async () => {
       await idTokenCheck(jwtToken);
@@ -128,6 +154,7 @@ const TenantList = () => {
           })}
         </tbody>
       </table>
+      <button onClick={handleLogout}>ログアウト</button>
     </>
   );
 };

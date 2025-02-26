@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Auth from "./components/Auth";
 import Callback from "./pages/Callback";
 import UserPage from "./pages/UserPage";
@@ -12,6 +12,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/callback" element={<Callback />} />
+        <Route path="/" element={<Navigate to="/tenants" replace />} />
         <Route path="/" element={<Auth />}>
           <Route path="/tenants" element={<TenantList />} />
           <Route path="/user/toppage" element={<UserPage />} />

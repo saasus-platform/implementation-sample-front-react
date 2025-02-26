@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
 
@@ -7,6 +8,7 @@ const DeleteUserLog = () => {
   const [deleteUsers, setDeleteUsers] = useState<any>();
   const [userinfo, setUserinfo] = useState<any>();
   const [tenantId, setTenantId] = useState<any>();
+  const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザー削除ログを取得
@@ -48,6 +50,32 @@ const DeleteUserLog = () => {
       second: "2-digit",
     };
     return new Date(dateString).toLocaleDateString("ja-JP", options);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${API_ENDPOINT}/logout`,
+        {},
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      window.localStorage.removeItem("SaaSusIdToken");
+
+      const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
+      if (loginUrl.startsWith("http")) {
+        window.location.href = loginUrl;
+      } else {
+        navigate(loginUrl);
+      }
+    } catch (error) {
+      console.error("ログアウトに失敗しました:", error);
+    }
   };
 
   useEffect(() => {
@@ -94,6 +122,8 @@ const DeleteUserLog = () => {
         </tbody>
       </table>
       <a href={`/admin/toppage?tenant_id=${tenantId}`}>ユーザー一覧</a>
+      <br />
+      <button onClick={handleLogout}>ログアウト</button>
     </>
   );
 };
