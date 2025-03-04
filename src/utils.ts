@@ -30,6 +30,9 @@ export const idTokenCheck = async (jwtToken: string) => {
       jwtToken = res.data.id_token;
       localStorage.setItem("SaaSusIdToken", jwtToken);
 
+      const accessToken = res.data.access_token;
+      localStorage.setItem("SaaSusAccessToken", accessToken);
+
       await sleep(1);
       return;
     } catch (err) {

@@ -23,6 +23,10 @@ const Callback = () => {
     const idToken = res.data.id_token;
     localStorage.setItem("SaaSusIdToken", idToken);
 
+    // アクセストークンをLocal Storageに保存
+    const accessToken = res.data.access_token;
+    localStorage.setItem("SaaSusAccessToken", accessToken);
+
     // リフレッシュトークンをCookieに保存
     const refreshToken = res.data.refresh_token;
     setCookie("SaaSusRefreshToken", refreshToken);
