@@ -52,32 +52,6 @@ const DeleteUserLog = () => {
     return new Date(dateString).toLocaleDateString("ja-JP", options);
   };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        `${API_ENDPOINT}/logout`,
-        {},
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-          },
-          withCredentials: true,
-        }
-      );
-      window.localStorage.removeItem("SaaSusIdToken");
-
-      const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
-      if (loginUrl.startsWith("http")) {
-        window.location.href = loginUrl;
-      } else {
-        navigate(loginUrl);
-      }
-    } catch (error) {
-      console.error("ログアウトに失敗しました:", error);
-    }
-  };
-
   useEffect(() => {
     const startUserPage = async () => {
       // テナントIDをクエリパラメータから取得
@@ -123,7 +97,6 @@ const DeleteUserLog = () => {
       </table>
       <a href={`/admin/toppage?tenant_id=${tenantId}`}>ユーザー一覧</a>
       <br />
-      <button onClick={handleLogout}>ログアウト</button>
     </>
   );
 };
