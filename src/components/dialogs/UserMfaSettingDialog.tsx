@@ -44,8 +44,8 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
     try {
       const response = await axios.get(`${API_ENDPOINT}/mfa_status`, {
         headers: {
+          "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
-          "X-Access-Token": accessToken!,
         },
         withCredentials: true,
       });
