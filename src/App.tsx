@@ -7,6 +7,7 @@ import UserRegister from "./pages/UserRegister";
 import DeleteUserLog from "./pages/DeleteUserLog";
 import SelfSignUp from "./pages/SelfSignUp";
 import HeaderUserbox from "./components/header/HeaderUserbox";
+import UserInvitation from "./pages/UserInvitation";
 
 const AppContent = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const AppContent = () => {
           <Route path="/user_register" element={<UserRegister />} />
           <Route path="/delete_user_log" element={<DeleteUserLog />} />
           <Route path="/self_sign_up" element={<SelfSignUp />} />
+          <Route path="/user_invitation" element={<UserInvitation />} />
         </Route>
       </Routes>
     </>

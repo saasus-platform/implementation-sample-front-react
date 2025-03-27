@@ -10,6 +10,7 @@ const UserPage = () => {
   const [tenantId, setTenantId] = useState<any>();
   const [tenantUserInfo, setTenantUserInfo] = useState<any>();
   const [planInfo, setPlanInfo] = useState<any>();
+  const [roleName, setRoleName] = useState<any>();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザ一覧取得
@@ -41,7 +42,11 @@ const UserPage = () => {
       (tenant: any) => tenant.id === tenantId
     );
     const planId = tenant?.plan_id;
+    const roleName = res.data.tenants.find(
+      (tenant: any) => tenant.id === tenantId
+    ).envs[0].roles[0].role_name;
     setTenantUserInfo(tenant);
+    setRoleName(roleName);
     setUserinfo(res.data);
 
     if (planId !== null && planId !== undefined) {
@@ -178,9 +183,15 @@ const UserPage = () => {
           ))}
         </tbody>
       </table>
-      <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
-      <br />
-      <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
+      {roleName === "admin" && (
+        <>
+          <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
+          <br />
+          <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
+          <br />
+          <a href={`/user_invitation?tenant_id=${tenantId}`}>ユーザー招待</a>
+        </>
+      )}
     </>
   );
 };
