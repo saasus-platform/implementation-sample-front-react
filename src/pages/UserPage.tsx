@@ -92,6 +92,7 @@ const UserPage = () => {
         }
       );
       window.localStorage.removeItem("SaaSusIdToken");
+      window.localStorage.removeItem("SaaSusAccessToken");
 
       const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
       if (loginUrl.startsWith("http")) {
