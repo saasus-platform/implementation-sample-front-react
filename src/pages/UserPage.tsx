@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
 
@@ -10,6 +11,7 @@ const UserPage = () => {
   const [tenantId, setTenantId] = useState<any>();
   const [tenantUserInfo, setTenantUserInfo] = useState<any>();
   const [planInfo, setPlanInfo] = useState<any>();
+  const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザ一覧取得
@@ -18,6 +20,7 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUsers",
       },
       withCredentials: true,
       params: {
@@ -33,6 +36,7 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserinfo",
       },
       withCredentials: true,
     });
@@ -49,6 +53,7 @@ const UserPage = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetPricingPlan",
         },
         withCredentials: true,
         params: {
@@ -65,11 +70,38 @@ const UserPage = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserAttributes",
       },
       withCredentials: true,
     });
 
     setUserAttributes(res.data.user_attributes);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${API_ENDPOINT}/logout`,
+        {},
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      window.localStorage.removeItem("SaaSusIdToken");
+
+      const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
+      if (loginUrl.startsWith("http")) {
+        window.location.href = loginUrl;
+      } else {
+        navigate(loginUrl);
+      }
+    } catch (error) {
+      console.error("ログアウトに失敗しました:", error);
+    }
   };
 
   useEffect(() => {
@@ -93,6 +125,7 @@ const UserPage = () => {
       await axios.delete(`${API_ENDPOINT}/user_delete`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "handleDeleteUser",
         },
         withCredentials: true,
         data: {
@@ -181,6 +214,8 @@ const UserPage = () => {
       <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
       <br />
       <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
+      <br />
+      <button onClick={handleLogout}>ログアウト</button>
     </>
   );
 };
