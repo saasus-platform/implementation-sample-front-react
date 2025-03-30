@@ -16,6 +16,7 @@ const Callback = () => {
     const res = await axios.get(`${API_ENDPOINT}/credentials?code=${code}`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
+        "X-SaaSus-Referer": "getToken",
       },
       withCredentials: true,
     });
@@ -40,6 +41,7 @@ const Callback = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "getRole",
       },
       withCredentials: true,
     });
@@ -66,6 +68,7 @@ const Callback = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "handleUserNavigation",
       },
       withCredentials: true,
     });

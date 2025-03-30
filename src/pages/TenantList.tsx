@@ -7,8 +7,8 @@ import { idTokenCheck } from "../utils";
 const TenantList = () => {
   const [tenants, setTenants] = useState<any>();
   const [tenantInfo, setTenantInfo] = useState<any>();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const navigate = useNavigate();
+  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ログインユーザの情報と所属テナント情報を取得
   const GetUserinfo = async () => {
@@ -16,6 +16,7 @@ const TenantList = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetUserinfo",
       },
       withCredentials: true,
     });
@@ -26,6 +27,7 @@ const TenantList = () => {
           headers: {
             "X-Requested-With": "XMLHttpRequest",
             Authorization: `Bearer ${jwtToken}`,
+            "X-SaaSus-Referer": "GetTenantAttribute",
           },
           withCredentials: true,
           params: {
@@ -50,6 +52,7 @@ const TenantList = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetRole",
         },
         withCredentials: true,
       });

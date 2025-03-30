@@ -49,6 +49,7 @@ const SelfSignup = () => {
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
                 Authorization: `Bearer ${jwtToken}`,
+                "X-SaaSus-Referer": "GetUserAttributes",
             },
             withCredentials: true,
         });
@@ -61,6 +62,7 @@ const SelfSignup = () => {
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
                 Authorization: `Bearer ${jwtToken}`,
+                "X-SaaSus-Referer": "GetTenantAttributes",
             },
             withCredentials: true,
         });
@@ -93,6 +95,7 @@ const SelfSignup = () => {
                     headers: {
                         Authorization: `Bearer ${jwtToken}`,
                         "Content-Type": "application/json",
+                        "X-SaaSus-Referer": "handleSubmitSelfSignUp",
                     },
                     withCredentials: true,
                 }
@@ -104,6 +107,7 @@ const SelfSignup = () => {
                 headers: {
                     "X-Requested-With": "XMLHttpRequest",
                     Authorization: `Bearer ${jwtToken}`,
+                    "X-SaaSus-Referer": "GetUserInfo",
                 },
                 withCredentials: true,
             });
