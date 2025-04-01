@@ -90,26 +90,26 @@ const UserInvitation = () => {
     <>
       <form onSubmit={handleSubmit}>
         <p>
-          メールアドレス：
+          <label htmlFor="email">メールアドレス：</label>
           <input
+            id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
+          />{" "}
+          <button type="submit">招待する</button>
         </p>
         <br />
-        <br />
-        <button type="submit">招待する</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <table border={1} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <td>メールアドレス</td>
-            <td>招待URL</td>
+            <td>招待リンク</td>
             <td>役割</td>
             <td>ステータス</td>
-            <td>招待日時</td>
+            <td>有効期限</td>
           </tr>
         </thead>
         <tbody>
