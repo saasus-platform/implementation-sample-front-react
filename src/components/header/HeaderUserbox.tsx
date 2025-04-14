@@ -30,14 +30,20 @@ const HeaderUserbox = () => {
   };
 
   return (
-    <header style={styles.header}>
-      <span style={styles.title}>サンプルアプリ</span>
-      <button onClick={toggleMenu} style={styles.userButton}>
+    <header className="flex justify-between items-center bg-gray-800 text-white px-5 py-3">
+      <span className="text-lg font-bold">サンプルアプリ</span>
+      <button
+        onClick={toggleMenu}
+        className="bg-transparent border-none text-white text-sm cursor-pointer"
+      >
         {email ? `${email} ▼` : "ユーザー ▼"}
       </button>
       {menuOpen && (
-        <div style={styles.menu}>
-          <button onClick={openMfaDialog} style={styles.menuItem}>
+        <div className="absolute top-12 right-5 bg-white text-black shadow-md rounded overflow-hidden min-w-[120px] z-50">
+          <button
+            onClick={openMfaDialog}
+            className="w-full py-2 px-3 text-left bg-transparent border-none cursor-pointer text-sm hover:bg-gray-100"
+          >
             多要素認証の設定
           </button>
         </div>
@@ -60,50 +66,6 @@ const decodeJwtPayload = (token: string): { email?: string } | null => {
     console.error("JWTデコードエラー:", error);
     return null;
   }
-};
-
-// スタイル
-const styles: { [key: string]: React.CSSProperties } = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#333",
-    color: "white",
-    padding: "10px 20px",
-  },
-  title: {
-    fontSize: "18px",
-    fontWeight: "bold",
-  },
-  userButton: {
-    background: "none",
-    border: "none",
-    color: "white",
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-  menu: {
-    position: "absolute",
-    top: "50px",
-    right: "20px",
-    backgroundColor: "white",
-    color: "black",
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    borderRadius: "4px",
-    overflow: "hidden",
-    minWidth: "120px",
-    zIndex: 100,
-  },
-  menuItem: {
-    width: "100%",
-    padding: "10px",
-    textAlign: "left",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
 };
 
 export default HeaderUserbox;

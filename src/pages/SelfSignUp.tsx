@@ -43,19 +43,31 @@ const AttributeInput = ({
   const isBoolean = typeof value === "boolean";
 
   return (
-    <p>
-      {displayName}：
-      <input
-        type={inputType}
-        checked={isBoolean ? value : undefined}
-        value={!isBoolean ? value || "" : undefined}
-        onChange={(e) => {
-          const newValue =
-            inputType === "checkbox" ? e.target.checked : e.target.value;
-          onChange(attributeName, newValue);
-        }}
-      />
-    </p>
+    <div className="mb-4">
+      <label className="flex items-center">
+        {inputType === "checkbox" ? (
+          <>
+            <input
+              type="checkbox"
+              checked={isBoolean ? value : undefined}
+              onChange={(e) => onChange(attributeName, e.target.checked)}
+              className="form-checkbox h-5 w-5 text-blue-600"
+            />
+            <span className="ml-2 text-gray-700">{displayName}</span>
+          </>
+        ) : (
+          <>
+            <span className="w-40 text-gray-700">{displayName}：</span>
+            <input
+              type={inputType}
+              value={!isBoolean ? value || "" : undefined}
+              onChange={(e) => onChange(attributeName, e.target.value)}
+              className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline flex-1"
+            />
+          </>
+        )}
+      </label>
+    </div>
   );
 };
 
@@ -82,13 +94,16 @@ const SelfSignup = () => {
       console.error("No tenant found for the user");
       return;
     }
+
     const tenantId = tenant.id; // テナント ID を取得
+
     // ロール名を取得
     const role = tenant.envs[0]?.roles[0]?.role_name;
     if (!role) {
       console.error("Role not found for the user");
       return;
     }
+
     switch (role) {
       case "sadmin":
         navigate(`/sadmin/toppage?tenant_id=${tenantId}`);
@@ -143,6 +158,7 @@ const SelfSignup = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     try {
       // セルフサインアップ処理
       await axios.post(
@@ -162,6 +178,7 @@ const SelfSignup = () => {
         }
       );
       console.log("Self-signup succeeded");
+
       // ユーザー情報を取得してロールで遷移先を判断
       const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
         headers: {
@@ -200,62 +217,83 @@ const SelfSignup = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <p>
-          テナント名：
-          <input
-            type="text"
-            value={tenantName}
-            onChange={(e) => setTenantName(e.target.value)}
-            required
-          />
-        </p>
-        <br />
+    <div className="p-6 max-w-3xl mx-auto">
+      <div className="bg-white shadow-md rounded-lg p-8">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">サインアップ</h1>
 
-        {/* テナント属性セクション */}
-        {tenantAttributes && Object.keys(tenantAttributes).length > 0 && (
-          <fieldset>
-            <legend>テナント属性</legend>
-            {Object.keys(tenantAttributes).map((key) => {
-              const attribute = tenantAttributes[key];
-              return (
-                <AttributeInput
-                  key={key}
-                  attributeName={attribute.attribute_name}
-                  displayName={attribute.display_name}
-                  attributeType={attribute.attribute_type}
-                  value={tenantAttributeValues[attribute.attribute_name]}
-                  onChange={handleTenantAttributeChange}
-                />
-              );
-            })}
-          </fieldset>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="mb-4">
+            <label className="flex items-center">
+              <span className="w-40 text-gray-700">テナント名：</span>
+              <input
+                type="text"
+                value={tenantName}
+                onChange={(e) => setTenantName(e.target.value)}
+                required
+                className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline flex-1"
+              />
+            </label>
+          </div>
 
-        {/* ユーザー属性セクション */}
-        {userAttributes && Object.keys(userAttributes).length > 0 && (
-          <fieldset>
-            <legend>ユーザー属性</legend>
-            {Object.keys(userAttributes).map((key) => {
-              const attribute = userAttributes[key];
-              return (
-                <AttributeInput
-                  key={key}
-                  attributeName={attribute.attribute_name}
-                  displayName={attribute.display_name}
-                  attributeType={attribute.attribute_type}
-                  value={userAttributeValues[attribute.attribute_name]}
-                  onChange={handleAttributeChange}
-                />
-              );
-            })}
-          </fieldset>
-        )}
+          {/* テナント属性セクション */}
+          {tenantAttributes && Object.keys(tenantAttributes).length > 0 && (
+            <div className="my-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
+                テナント属性
+              </h2>
+              <div className="bg-gray-50 p-4 rounded-md">
+                {Object.keys(tenantAttributes).map((key) => {
+                  const attribute = tenantAttributes[key];
+                  return (
+                    <AttributeInput
+                      key={key}
+                      attributeName={attribute.attribute_name}
+                      displayName={attribute.display_name}
+                      attributeType={attribute.attribute_type}
+                      value={tenantAttributeValues[attribute.attribute_name]}
+                      onChange={handleTenantAttributeChange}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-        <button type="submit">サインアップ</button>
-      </form>
-    </>
+          {/* ユーザー属性セクション */}
+          {userAttributes && Object.keys(userAttributes).length > 0 && (
+            <div className="my-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
+                ユーザー属性
+              </h2>
+              <div className="bg-gray-50 p-4 rounded-md">
+                {Object.keys(userAttributes).map((key) => {
+                  const attribute = userAttributes[key];
+                  return (
+                    <AttributeInput
+                      key={key}
+                      attributeName={attribute.attribute_name}
+                      displayName={attribute.display_name}
+                      attributeType={attribute.attribute_type}
+                      value={userAttributeValues[attribute.attribute_name]}
+                      onChange={handleAttributeChange}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end mt-6">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline"
+            >
+              サインアップ
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -121,7 +121,6 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         }
       );
       if (response.status === 200) {
-        // setIsVerified(true);
         setIsMfaEnabled(true);
         setError("");
         // MFAを有効化
@@ -184,14 +183,14 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
   };
 
   return open ? (
-    <div style={styles.overlay}>
-      <div style={styles.dialog}>
-        <h2>多要素認証</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-5 rounded-lg w-80 text-center shadow-lg text-black">
+        <h2 className="text-xl font-semibold mb-4">多要素認証</h2>
         {!isFeatureAvailable ? (
-          <p style={{ color: "red" }}>{error}</p>
+          <p className="text-red-600">{error}</p>
         ) : isMfaEnabled ? (
           <>
-            <p>多要素認証は設定済みです</p>
+            <p className="mb-4">多要素認証は設定済みです</p>
             {!showQrCode ? (
               <>
                 <button
@@ -199,35 +198,37 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
                     fetchMfaSetup();
                     setShowQrCode(true);
                   }}
-                  style={{ ...styles.buttonBase, ...styles.buttonPrimary }}
+                  className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   デバイスを再登録
                 </button>
                 <button
                   onClick={disableUserMfaPreference}
-                  style={{ ...styles.buttonBase, ...styles.buttonSecondary }}
+                  className="w-full py-3 bg-white text-blue-600 border border-blue-600 rounded-md mb-4 hover:bg-blue-50"
                 >
                   多要素認証を解除する
                 </button>
               </>
             ) : (
               <>
-                <p>
+                <p className="mb-4">
                   スマートフォンのGoogle
                   Authenticator、またはAuthyアプリで設定してください。
                 </p>
-                <QRCodeCanvas value={qrCodeUrl} size={150} />
+                <div className="mb-4 flex justify-center">
+                  <QRCodeCanvas value={qrCodeUrl} size={150} />
+                </div>
                 <input
                   type="text"
                   placeholder="認証コードを入力"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  style={styles.input}
+                  className="w-11/12 p-2 border border-gray-300 rounded-md mb-4"
                 />
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p className="text-red-600 mb-2">{error}</p>}
                 <button
                   onClick={handleVerifyMfa}
-                  style={{ ...styles.buttonBase, ...styles.buttonPrimary }}
+                  className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   確認
                 </button>
@@ -238,7 +239,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
           <>
             {!showQrCode ? (
               <>
-                <p>
+                <p className="mb-4">
                   デバイスが設定されていません。有効にするにはデバイスを追加してください。
                 </p>
                 <button
@@ -246,29 +247,31 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
                     fetchMfaSetup();
                     setShowQrCode(true);
                   }}
-                  style={{ ...styles.buttonBase, ...styles.buttonPrimary }}
+                  className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   デバイスを追加する
                 </button>
               </>
             ) : (
               <>
-                <p>
+                <p className="mb-4">
                   スマートフォンのGoogle
                   Authenticator、またはAuthyアプリで設定してください。
                 </p>
-                <QRCodeCanvas value={qrCodeUrl} size={150} />
+                <div className="mb-4 flex justify-center">
+                  <QRCodeCanvas value={qrCodeUrl} size={150} />
+                </div>
                 <input
                   type="text"
                   placeholder="認証コードを入力"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  style={styles.input}
+                  className="w-11/12 p-2 border border-gray-300 rounded-md mb-4"
                 />
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p className="text-red-600 mb-2">{error}</p>}
                 <button
                   onClick={handleVerifyMfa}
-                  style={{ ...styles.buttonBase, ...styles.buttonPrimary }}
+                  className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   確認
                 </button>
@@ -278,67 +281,13 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         )}
         <button
           onClick={handleClose}
-          style={{ ...styles.buttonBase, ...styles.closeButton }}
+          className="w-full py-3 bg-transparent border border-gray-800 text-gray-800 rounded-md hover:bg-gray-100"
         >
           閉じる
         </button>
       </div>
     </div>
   ) : null;
-};
-
-// スタイル
-const styles: { [key: string]: React.CSSProperties } = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dialog: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "8px",
-    width: "320px",
-    textAlign: "center",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    color: "black",
-  },
-  input: {
-    width: "90%",
-    padding: "10px",
-    margin: "10px 0",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-  },
-  buttonBase: {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "4px",
-    fontSize: "14px",
-    cursor: "pointer",
-    border: "none",
-    marginTop: "10px",
-  },
-  buttonPrimary: {
-    backgroundColor: "#007bff",
-    color: "#fff",
-  },
-  buttonSecondary: {
-    backgroundColor: "#fff",
-    color: "#007bff",
-    border: "1px solid #007bff",
-  },
-  closeButton: {
-    backgroundColor: "transparent",
-    border: "1px solid black",
-    color: "black",
-  },
 };
 
 export default UserMfaSettingDialog;

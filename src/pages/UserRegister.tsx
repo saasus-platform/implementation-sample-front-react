@@ -39,9 +39,15 @@ const AttributeInput = ({
   const isBoolean = typeof value === "boolean";
 
   return (
-    <p>
-      {displayName}：
+    <div className="mb-4">
+      <label
+        className="block text-gray-700 text-sm font-bold mb-2"
+        htmlFor={attributeName}
+      >
+        {displayName}
+      </label>
       <input
+        id={attributeName}
         type={inputType}
         checked={isBoolean ? value : undefined}
         value={!isBoolean ? value || "" : undefined}
@@ -50,8 +56,13 @@ const AttributeInput = ({
             inputType === "checkbox" ? e.target.checked : e.target.value;
           onChange(attributeName, newValue);
         }}
+        className={`${
+          inputType === "checkbox"
+            ? "form-checkbox h-5 w-5 text-blue-600"
+            : "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        }`}
       />
-    </p>
+    </div>
   );
 };
 
@@ -137,50 +148,89 @@ const UserRegister = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <p>
-          メールアドレス：
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </p>
-        <br />
-        <p>
-          パスワード：
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </p>
-        <br />
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="bg-white shadow-md rounded-lg p-8">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">ユーザー登録</h1>
 
-        {/* ユーザー属性セクション */}
-        {userAttributes && Object.keys(userAttributes).length > 0 && (
-          <fieldset>
-            <legend>ユーザー属性</legend>
-            {Object.keys(userAttributes).map((key) => {
-              const attribute = userAttributes[key];
-              return (
-                <AttributeInput
-                  key={key}
-                  attributeName={attribute.attribute_name}
-                  displayName={attribute.display_name}
-                  attributeType={attribute.attribute_type}
-                  value={userAttributeValues[attribute.attribute_name]}
-                  onChange={handleAttributeChange}
-                />
-              );
-            })}
-          </fieldset>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="email"
+            >
+              メールアドレス
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+          </div>
 
-        <button type="submit">登録</button>
-      </form>
-    </>
+          <div className="mb-6">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="password"
+            >
+              パスワード
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+          </div>
+
+          {/* ユーザー属性セクション */}
+          {userAttributes && Object.keys(userAttributes).length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-700">
+                ユーザー属性
+              </h2>
+              <div className="bg-gray-50 p-4 rounded-md">
+                {Object.keys(userAttributes).map((key) => {
+                  const attribute = userAttributes[key];
+                  return (
+                    <AttributeInput
+                      key={key}
+                      attributeName={attribute.attribute_name}
+                      displayName={attribute.display_name}
+                      attributeType={attribute.attribute_type}
+                      value={userAttributeValues[attribute.attribute_name]}
+                      onChange={handleAttributeChange}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              登録
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="mt-4 text-center">
+        <a
+          href={`/admin/toppage?tenant_id=${tenantId}`}
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          ユーザー一覧に戻る
+        </a>
+      </div>
+    </div>
   );
 };
 
