@@ -1,28 +1,41 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
+import {
+  UserAttribute,
+  TenantAttribute,
+  UserAttributeValues,
+  TenantAttributeValues,
+  UserAttributesResponse,
+  TenantAttributesResponse,
+  UserInfo,
+} from "../types";
 
 const SelfSignup = () => {
-  const [userAttributes, setUserAttributes] = useState<any>();
-  const [userAttributeValues, setUserAttributeValues] = useState<any>({});
+  const [userAttributes, setUserAttributes] = useState<
+    Record<string, UserAttribute>
+  >({});
+  const [userAttributeValues, setUserAttributeValues] =
+    useState<UserAttributeValues>({});
   const [tenantName, setTenantName] = useState("");
-  const [tenantAttributes, setTenantAttributes] = useState<any>();
-  const [tenantAttributeValues, setTenantAttributeValues] = useState<any>({});
+  const [tenantAttributes, setTenantAttributes] = useState<
+    Record<string, TenantAttribute>
+  >({});
+  const [tenantAttributeValues, setTenantAttributeValues] =
+    useState<TenantAttributeValues>({});
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ロールによって遷移先を振り分け
-  const navigateByRole = async (userInfo: any) => {
+  const navigateByRole = async (userInfo: UserInfo) => {
     // ユーザーが1つのテナントにのみ所属している前提
     const tenant = userInfo.tenants[0]; // tenants[0] に直接アクセス
     if (!tenant) {
       console.error("No tenant found for the user");
       return;
     }
-
     const tenantId = tenant.id; // テナント ID を取得
     // ロール名を取得
     const role = tenant.envs[0]?.roles[0]?.role_name;
@@ -30,7 +43,6 @@ const SelfSignup = () => {
       console.error("Role not found for the user");
       return;
     }
-
     switch (role) {
       case "sadmin":
         navigate(`/sadmin/toppage?tenant_id=${tenantId}`);
@@ -42,31 +54,37 @@ const SelfSignup = () => {
         navigate(`/user/toppage?tenant_id=${tenantId}`);
     }
   };
+
   // ユーザー属性情報を取得
   const GetUserAttributes = async () => {
-    const res = await axios.get(`${API_ENDPOINT}/user_attributes`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserAttributes",
-      },
-      withCredentials: true,
-    });
-
+    const res = await axios.get<UserAttributesResponse>(
+      `${API_ENDPOINT}/user_attributes`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetUserAttributes",
+        },
+        withCredentials: true,
+      }
+    );
     setUserAttributes(res.data.user_attributes);
   };
+
   // テナント属性情報を取得
   const GetTenantAttributes = async () => {
-    const res = await axios.get(`${API_ENDPOINT}/tenant_attributes_list`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetTenantAttributes",
-      },
-      withCredentials: true,
-    });
-
-    setTenantAttributes(res.data.tenant_attributes);
+    const res = await axios.get<TenantAttributesResponse>(
+      `${API_ENDPOINT}/tenant_attributes_list`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetTenantAttributes",
+        },
+        withCredentials: true,
+      }
+    );
+    setTenantAttributes(res.data.tenant_attributes || {});
   };
 
   useEffect(() => {
@@ -74,13 +92,11 @@ const SelfSignup = () => {
       await idTokenCheck(jwtToken);
       await Promise.all([GetUserAttributes(), GetTenantAttributes()]);
     };
-
     startUserRegisterPage();
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     try {
       // セルフサインアップ処理
       await axios.post(
@@ -100,9 +116,8 @@ const SelfSignup = () => {
         }
       );
       console.log("Self-signup succeeded");
-
       // ユーザー情報を取得してロールで遷移先を判断
-      const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
@@ -110,7 +125,6 @@ const SelfSignup = () => {
         },
         withCredentials: true,
       });
-
       const userInfo = res.data;
       await navigateByRole(userInfo);
     } catch (error) {
@@ -119,18 +133,26 @@ const SelfSignup = () => {
     }
   };
 
-  const handleAttributeChange = (key: string, value: any) => {
-    setUserAttributeValues((prevValues: any) => ({
+  const handleAttributeChange = (
+    key: string,
+    value: string | boolean | number | Date
+  ) => {
+    setUserAttributeValues((prevValues: UserAttributeValues) => ({
       ...prevValues,
       [key]: value,
     }));
   };
-  const handleTenantAttributeChange = (key: string, value: any) => {
-    setTenantAttributeValues((prevValues: any) => ({
+
+  const handleTenantAttributeChange = (
+    key: string,
+    value: string | boolean | number | Date
+  ) => {
+    setTenantAttributeValues((prevValues: TenantAttributeValues) => ({
       ...prevValues,
       [key]: value,
     }));
   };
+
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -144,7 +166,6 @@ const SelfSignup = () => {
           />
         </p>
         <br />
-
         {/* テナント属性セクション */}
         {tenantAttributes && (
           <fieldset>
@@ -164,11 +185,23 @@ const SelfSignup = () => {
                   }
                   checked={
                     tenantAttributeValues &&
-                    tenantAttributeValues[tenantAttributes[key].attribute_name]
+                    typeof tenantAttributeValues[
+                      tenantAttributes[key].attribute_name
+                    ] === "boolean"
+                      ? (tenantAttributeValues[
+                          tenantAttributes[key].attribute_name
+                        ] as boolean)
+                      : undefined
                   }
                   value={
                     tenantAttributeValues &&
-                    tenantAttributeValues[tenantAttributes[key].attribute_name]
+                    typeof tenantAttributeValues[
+                      tenantAttributes[key].attribute_name
+                    ] !== "boolean"
+                      ? (tenantAttributeValues[
+                          tenantAttributes[key].attribute_name
+                        ] as string)
+                      : undefined
                   }
                   onChange={(e) => {
                     const newValue =
@@ -185,7 +218,6 @@ const SelfSignup = () => {
             ))}
           </fieldset>
         )}
-
         {/* ユーザー属性セクション */}
         {userAttributes && (
           <fieldset>
@@ -205,11 +237,23 @@ const SelfSignup = () => {
                   }
                   checked={
                     userAttributeValues &&
-                    userAttributeValues[userAttributes[key].attribute_name]
+                    typeof userAttributeValues[
+                      userAttributes[key].attribute_name
+                    ] === "boolean"
+                      ? (userAttributeValues[
+                          userAttributes[key].attribute_name
+                        ] as boolean)
+                      : undefined
                   }
                   value={
                     userAttributeValues &&
-                    userAttributeValues[userAttributes[key].attribute_name]
+                    typeof userAttributeValues[
+                      userAttributes[key].attribute_name
+                    ] !== "boolean"
+                      ? (userAttributeValues[
+                          userAttributes[key].attribute_name
+                        ] as string)
+                      : undefined
                   }
                   onChange={(e) => {
                     const newValue =

@@ -1,37 +1,40 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
+import { DeletedUser, UserInfo } from "../types";
 
 const DeleteUserLog = () => {
-  const [deleteUsers, setDeleteUsers] = useState<any>();
-  const [userinfo, setUserinfo] = useState<any>();
-  const [tenantId, setTenantId] = useState<any>();
-  const navigate = useNavigate();
+  const [deleteUsers, setDeleteUsers] = useState<DeletedUser[]>([]);
+  const [userinfo, setUserinfo] = useState<UserInfo | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザー削除ログを取得
-  const GetDeleteUsers = async (tenantId: any) => {
-    const res = await axios.get(`${API_ENDPOINT}/delete_user_log`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetDeleteUsers",
-      },
-      withCredentials: true,
-      params: {
-        tenant_id: tenantId,
-        user_id: userinfo.id,
-      },
-    });
+  const GetDeleteUsers = async (tenantId: string) => {
+    if (!userinfo) return;
 
+    const res = await axios.get<DeletedUser[]>(
+      `${API_ENDPOINT}/delete_user_log`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetDeleteUsers",
+        },
+        withCredentials: true,
+        params: {
+          tenant_id: tenantId,
+          user_id: userinfo.id,
+        },
+      }
+    );
     setDeleteUsers(res.data);
   };
 
   // ログインユーザの情報を取得
   const GetUserinfo = async () => {
-    const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+    const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
@@ -60,11 +63,9 @@ const DeleteUserLog = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
-
       await idTokenCheck(jwtToken);
       await GetUserinfo();
     };
-
     startUserPage();
   }, []);
 
@@ -87,7 +88,7 @@ const DeleteUserLog = () => {
           </tr>
         </thead>
         <tbody>
-          {deleteUsers?.map((deleteUser: any) => (
+          {deleteUsers?.map((deleteUser: DeletedUser) => (
             <tr key={deleteUser.id}>
               <td>{deleteUser.tenant_id}</td>
               <td>{deleteUser.user_id}</td>

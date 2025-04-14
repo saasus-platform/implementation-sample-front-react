@@ -3,6 +3,7 @@ import { API_ENDPOINT } from "../../const";
 import axios from "axios";
 import { QRCodeCanvas } from "qrcode.react";
 import { idTokenCheck } from "../../utils";
+import { ApiError, MfaSetupResponse, MfaStatusResponse } from "../../types";
 
 type Props = {
   open: boolean;
@@ -29,10 +30,8 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       await idTokenCheck(localStorage.getItem("SaaSusIdToken") as string);
       setJwtToken(localStorage.getItem("SaaSusIdToken") as string);
       setAccessToken(localStorage.getItem("SaaSusAccessToken"));
-
       await checkMfaStatus();
     };
-
     if (open) {
       setShowQrCode(false);
       updateTokensAndCheckStatus();
@@ -42,24 +41,27 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
   // MFAの状態を確認
   const checkMfaStatus = async () => {
     try {
-      const response = await axios.get(`${API_ENDPOINT}/mfa_status`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        withCredentials: true,
-      });
-
+      const response = await axios.get<MfaStatusResponse>(
+        `${API_ENDPOINT}/mfa_status`,
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          withCredentials: true,
+        }
+      );
       setIsMfaEnabled(response.data.enabled);
       setIsFeatureAvailable(true);
-    } catch (err: any) {
-      console.error(err);
-      if (!err.response) {
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
+      if (!error.response) {
         setError(
           "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。"
         );
         setIsFeatureAvailable(false);
-      } else if (err.response.status === 404) {
+      } else if (error.response.status === 404) {
         setError("この機能はまだ実装されていません。");
         setIsFeatureAvailable(false);
       } else {
@@ -74,21 +76,23 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       setError("アクセストークンがありません");
       return;
     }
-
     try {
-      const response = await axios.get(`${API_ENDPOINT}/mfa_setup`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-Access-Token": accessToken,
-        },
-        withCredentials: true,
-      });
-
+      const response = await axios.get<MfaSetupResponse>(
+        `${API_ENDPOINT}/mfa_setup`,
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            Authorization: `Bearer ${jwtToken}`,
+            "X-Access-Token": accessToken,
+          },
+          withCredentials: true,
+        }
+      );
       setQrCodeUrl(response.data.qrCodeUrl);
       setShowQrCode(true);
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
       setError("MFAのセットアップ情報の取得に失敗しました");
     }
   };
@@ -99,12 +103,10 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       setError("認証コードを入力してください");
       return;
     }
-
     if (!accessToken) {
       setError("アクセストークンがありません");
       return;
     }
-
     try {
       const response = await axios.post(
         `${API_ENDPOINT}/mfa_verify`,
@@ -118,23 +120,23 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
           withCredentials: true,
         }
       );
-
       if (response.status === 200) {
         // setIsVerified(true);
         setIsMfaEnabled(true);
         setError("");
-
         // MFAを有効化
         await enableUserMfaPreference();
         setShowQrCode(false);
       } else {
         setError("MFA認証に失敗しました");
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
       setError("MFA認証に失敗しました");
     }
   };
+
   // MFA有効化
   const enableUserMfaPreference = async () => {
     try {
@@ -149,13 +151,14 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
           withCredentials: true,
         }
       );
-
       setIsMfaEnabled(true);
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
       setError("MFAの有効化に失敗しました");
     }
   };
+
   // MFA無効化
   const disableUserMfaPreference = async () => {
     try {
@@ -170,12 +173,12 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
           withCredentials: true,
         }
       );
-
       setIsMfaEnabled(false);
       setShowQrCode(false);
       handleClose();
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
       setError("MFAの無効化に失敗しました");
     }
   };

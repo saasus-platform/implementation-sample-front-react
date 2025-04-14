@@ -3,16 +3,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
+import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
 
 const TenantList = () => {
-  const [tenants, setTenants] = useState<any>();
-  const [tenantInfo, setTenantInfo] = useState<any>();
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  // tenantInfoの型をより具体的に修正
+  const [tenantInfo, setTenantInfo] = useState<any[]>([]);
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ログインユーザの情報と所属テナント情報を取得
   const GetUserinfo = async () => {
-    const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+    const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
@@ -22,33 +24,35 @@ const TenantList = () => {
     });
 
     const tenantInfo = await Promise.all(
-      res.data.tenants.map(async (tenant: any) => {
-        const res = await axios.get(`${API_ENDPOINT}/tenant_attributes`, {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "GetTenantAttribute",
-          },
-          withCredentials: true,
-          params: {
-            tenant_id: tenant.id,
-          },
-        });
-
-        return res.data;
+      res.data.tenants.map(async (tenant: Tenant) => {
+        const res = await axios.get<TenantAttributesResponse>(
+          `${API_ENDPOINT}/tenant_attributes`,
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+              Authorization: `Bearer ${jwtToken}`,
+              "X-SaaSus-Referer": "GetTenantAttribute",
+            },
+            withCredentials: true,
+            params: {
+              tenant_id: tenant.id,
+            },
+          }
+        );
+        // API応答の構造に応じて適切なデータを返す
+        return res.data.tenant_attributes || res.data;
       })
     );
-
     console.log(tenantInfo);
     setTenants(res.data.tenants);
     setTenantInfo(tenantInfo);
   };
 
-  const handleUserListClick = async (tenantId: any) => {
+  const handleUserListClick = async (tenantId: string) => {
     try {
       // ロールの取得
       const jwtToken = window.localStorage.getItem("SaaSusIdToken");
-      const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
@@ -57,9 +61,11 @@ const TenantList = () => {
         withCredentials: true,
       });
 
-      const role = res.data.tenants.find(
-        (tenant: any) => tenant.id === tenantId
-      ).envs[0].roles[0].role_name;
+      const tenant = res.data.tenants.find(
+        (tenant: Tenant) => tenant.id === tenantId
+      );
+
+      const role = tenant?.envs[0]?.roles[0]?.role_name || "";
 
       // リダイレクト
       switch (role) {
@@ -83,7 +89,6 @@ const TenantList = () => {
       await idTokenCheck(jwtToken);
       GetUserinfo();
     };
-
     startTenantListPage();
   }, []);
 
@@ -104,7 +109,7 @@ const TenantList = () => {
           </tr>
         </thead>
         <tbody>
-          {tenants?.map((tenant: any, tenantIndex: number) => {
+          {tenants?.map((tenant: Tenant, tenantIndex: number) => {
             return (
               <tr key={tenant.id}>
                 <td>{tenant.id}</td>

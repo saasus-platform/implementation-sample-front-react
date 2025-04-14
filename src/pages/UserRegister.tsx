@@ -3,26 +3,37 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
+import {
+  UserAttribute,
+  UserAttributeValues,
+  UserAttributesResponse,
+} from "../types";
 
 const UserRegister = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantId, setTenantId] = useState<any>();
-  const [userAttributes, setUserAttributes] = useState<any>();
-  const [userAttributeValues, setUserAttributeValues] = useState<any>();
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userAttributes, setUserAttributes] = useState<
+    Record<string, UserAttribute>
+  >({});
+  const [userAttributeValues, setUserAttributeValues] =
+    useState<UserAttributeValues>({});
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザー属性情報を取得
   const GetUserAttributes = async () => {
-    const res = await axios.get(`${API_ENDPOINT}/user_attributes`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserAttributes",
-      },
-      withCredentials: true,
-    });
+    const res = await axios.get<UserAttributesResponse>(
+      `${API_ENDPOINT}/user_attributes`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
+          "X-SaaSus-Referer": "GetUserAttributes",
+        },
+        withCredentials: true,
+      }
+    );
 
     console.log(res.data.user_attributes);
     setUserAttributes(res.data.user_attributes);
@@ -69,8 +80,11 @@ const UserRegister = () => {
     }
   };
 
-  const handleAttributeChange = (key: string, value: any) => {
-    setUserAttributeValues((prevValues: any) => ({
+  const handleAttributeChange = (
+    key: string,
+    value: string | boolean | number | Date
+  ) => {
+    setUserAttributeValues((prevValues: UserAttributeValues) => ({
       ...prevValues,
       [key]: value,
     }));
@@ -113,11 +127,23 @@ const UserRegister = () => {
                 }
                 checked={
                   userAttributeValues &&
-                  userAttributeValues[userAttributes[key].attribute_name]
+                  typeof userAttributeValues[
+                    userAttributes[key].attribute_name
+                  ] === "boolean"
+                    ? (userAttributeValues[
+                        userAttributes[key].attribute_name
+                      ] as boolean)
+                    : undefined
                 }
                 value={
                   userAttributeValues &&
-                  userAttributeValues[userAttributes[key].attribute_name]
+                  typeof userAttributeValues[
+                    userAttributes[key].attribute_name
+                  ] !== "boolean"
+                    ? (userAttributeValues[
+                        userAttributes[key].attribute_name
+                      ] as string)
+                    : undefined
                 }
                 onChange={(e) => {
                   const newValue =

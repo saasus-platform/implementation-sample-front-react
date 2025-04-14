@@ -2,21 +2,25 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
+import { ApiError, Invitation } from "../types";
 
 const UserInvitation = () => {
   const [email, setEmail] = useState("");
-  const [tenantId, setTenantId] = useState<any>();
-  const [invitations, setInvitations] = useState<any>();
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [error, setError] = useState("");
+
   const accessToken = window.localStorage.getItem(
     "SaaSusAccessToken"
   ) as string;
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザ一覧取得
-  const getInvitations = async (tenantId: any) => {
+  const getInvitations = async (tenantId: string | null) => {
+    if (!tenantId) return;
+
     try {
-      const res = await axios.get(`${API_ENDPOINT}/invitations`, {
+      const res = await axios.get<Invitation[]>(`${API_ENDPOINT}/invitations`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
@@ -27,13 +31,14 @@ const UserInvitation = () => {
         },
       });
       setInvitations(res.data);
-    } catch (err: any) {
-      console.error(err);
-      if (!err.response) {
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
+      if (!error.response) {
         setError(
           "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。"
         );
-      } else if (err.response.status === 404) {
+      } else if (error.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
         window.location.href = LOGIN_URL;
@@ -49,13 +54,11 @@ const UserInvitation = () => {
       getInvitations(tenantIdFromQuery);
       await idTokenCheck(jwtToken);
     };
-
     startUserRegisterPage();
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     try {
       const response = await axios.post(
         `${API_ENDPOINT}/user_invitation`,
@@ -72,18 +75,18 @@ const UserInvitation = () => {
           withCredentials: true,
         }
       );
-
       // リダイレクトはaxiosの成功後に行う
       if (response.status === 200) {
         window.location.href = `/user_invitation?tenant_id=${tenantId}`;
       }
-    } catch (err: any) {
-      console.error(err);
-      if (!err.response) {
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      console.error(error);
+      if (!error.response) {
         setError(
           "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。"
         );
-      } else if (err.response.status === 404) {
+      } else if (error.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
         window.location.href = LOGIN_URL;
@@ -118,17 +121,15 @@ const UserInvitation = () => {
           </tr>
         </thead>
         <tbody>
-          {invitations?.map((invitation: any, tenantIndex: number) => {
+          {invitations?.map((invitation: Invitation, tenantIndex: number) => {
             return (
               <tr key={invitation.id}>
                 <td>{invitation.email}</td>
                 <td>{invitation.invitation_url}</td>
                 <td>
-                  {invitation.envs?.[0]?.roles?.map(
-                    (role: any, index: number) => (
-                      <div key={index}>{role.display_name}</div>
-                    )
-                  )}
+                  {invitation.envs?.[0]?.roles?.map((role, index: number) => (
+                    <div key={index}>{role.display_name}</div>
+                  ))}
                 </td>
                 <td>{invitation.status}</td>
                 <td>
