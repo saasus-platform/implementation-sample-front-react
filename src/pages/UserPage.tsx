@@ -221,11 +221,15 @@ const UserPage = () => {
         <>
           <a href={`/user_register?tenant_id=${tenantId}`}>ユーザー新規登録</a>
           <br />
-          <a href={`/delete_user_log?tenant_id=${tenantId}`}>ユーザー削除ログ</a>
+          <a href={`/delete_user_log?tenant_id=${tenantId}`}>
+            ユーザー削除ログ
+          </a>
           <br />
           <a href={`/user_invitation?tenant_id=${tenantId}`}>ユーザー招待</a>
           <span style={{ color: "red", marginLeft: "8px" }}>
-            ※ユーザー招待機能を利用するには、SaaSus Platform でドメイン名を設定し、DNS 情報が検証され、正常に動作中になっている必要があります。
+            ※ユーザー招待機能を利用するには、SaaSus Platform
+            でドメイン名を設定し、DNS
+            情報が検証され、正常に動作中になっている必要があります。
           </span>
         </>
       )}

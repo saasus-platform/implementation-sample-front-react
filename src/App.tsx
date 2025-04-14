@@ -1,4 +1,10 @@
-import { BrowserRouter, Route, Routes, Navigate,useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Auth from "./components/Auth";
 import Callback from "./pages/Callback";
 import UserPage from "./pages/UserPage";

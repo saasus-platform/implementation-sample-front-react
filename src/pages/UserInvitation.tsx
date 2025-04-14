@@ -8,7 +8,9 @@ const UserInvitation = () => {
   const [tenantId, setTenantId] = useState<any>();
   const [invitations, setInvitations] = useState<any>();
   const [error, setError] = useState("");
-  const accessToken = window.localStorage.getItem("SaaSusAccessToken") as string;
+  const accessToken = window.localStorage.getItem(
+    "SaaSusAccessToken"
+  ) as string;
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
 
   // ユーザ一覧取得
@@ -16,28 +18,29 @@ const UserInvitation = () => {
     try {
       const res = await axios.get(`${API_ENDPOINT}/invitations`, {
         headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
+          "X-Requested-With": "XMLHttpRequest",
+          Authorization: `Bearer ${jwtToken}`,
         },
         withCredentials: true,
         params: {
-        tenant_id: tenantId,
+          tenant_id: tenantId,
         },
       });
       setInvitations(res.data);
     } catch (err: any) {
       console.error(err);
       if (!err.response) {
-        setError("ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。");
+        setError(
+          "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。"
+        );
       } else if (err.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
         window.location.href = LOGIN_URL;
       }
     }
+  };
 
-  }
-  
   useEffect(() => {
     const startUserRegisterPage = async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -54,7 +57,7 @@ const UserInvitation = () => {
     event.preventDefault();
 
     try {
-        const response = await axios.post(
+      const response = await axios.post(
         `${API_ENDPOINT}/user_invitation`,
         {
           email,
@@ -77,7 +80,9 @@ const UserInvitation = () => {
     } catch (err: any) {
       console.error(err);
       if (!err.response) {
-        setError("ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。");
+        setError(
+          "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。"
+        );
       } else if (err.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
@@ -119,15 +124,17 @@ const UserInvitation = () => {
                 <td>{invitation.email}</td>
                 <td>{invitation.invitation_url}</td>
                 <td>
-                    {invitation.envs?.[0]?.roles?.map((role: any, index: number) => (
-                        <div key={index}>{role.display_name}</div>
-                    ))}
-                    </td>
+                  {invitation.envs?.[0]?.roles?.map(
+                    (role: any, index: number) => (
+                      <div key={index}>{role.display_name}</div>
+                    )
+                  )}
+                </td>
                 <td>{invitation.status}</td>
                 <td>
-                    {invitation.expired_at
-                        ? new Date(invitation.expired_at * 1000).toLocaleString()
-                        : "N/A"}
+                  {invitation.expired_at
+                    ? new Date(invitation.expired_at * 1000).toLocaleString()
+                    : "N/A"}
                 </td>
               </tr>
             );
