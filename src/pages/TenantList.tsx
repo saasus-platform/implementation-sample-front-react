@@ -5,6 +5,28 @@ import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
 
+// テナント属性の値を適切にフォーマットする関数
+const formatTenantAttributeValue = (
+  value: any,
+  attributeType: string
+): string => {
+  if (value === undefined || value === null) {
+    return "　";
+  }
+
+  // Bool型の場合は「設定済み」「未設定」で表示
+  if (attributeType.toLowerCase() === "bool") {
+    return value === true ? "設定済み" : "未設定";
+  }
+
+  // 日付型の場合
+  if (value instanceof Date) {
+    return value.toString();
+  }
+
+  return String(value);
+};
+
 const TenantList = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   // tenantInfoの型をより具体的に修正
@@ -100,40 +122,37 @@ const TenantList = () => {
           <tr>
             <td>テナントID</td>
             <td>テナント名</td>
-            {tenantInfo &&
-              tenantInfo.length > 0 &&
-              Object.keys(tenantInfo[0]).map((key, index) => (
-                <td key={index}>{tenantInfo[0][key].display_name}</td>
+            {tenantInfo?.length > 0 &&
+              Object.keys(tenantInfo[0] || {}).map((key) => (
+                <td key={key}>{tenantInfo[0][key].display_name}</td>
               ))}
             <td></td>
           </tr>
         </thead>
         <tbody>
-          {tenants?.map((tenant: Tenant, tenantIndex: number) => {
-            return (
-              <tr key={tenant.id}>
-                <td>{tenant.id}</td>
-                <td>{tenant.name}</td>
-                {tenantInfo[tenantIndex] &&
-                  Object.keys(tenantInfo[tenantIndex]).map((key) => (
+          {tenants?.map((tenant: Tenant, tenantIndex: number) => (
+            <tr key={tenant.id}>
+              <td>{tenant.id}</td>
+              <td>{tenant.name}</td>
+              {tenantInfo[tenantIndex] &&
+                Object.keys(tenantInfo[tenantIndex] || {}).map((key) => {
+                  const attribute = tenantInfo[tenantIndex][key];
+                  return (
                     <td key={key}>
-                      {tenantInfo[tenantIndex][
-                        key
-                      ].attribute_type.toLowerCase() === "bool"
-                        ? tenantInfo[tenantIndex][key].value === true
-                          ? "設定済み"
-                          : "未設定"
-                        : tenantInfo[tenantIndex][key].value}
+                      {formatTenantAttributeValue(
+                        attribute.value,
+                        attribute.attribute_type
+                      )}
                     </td>
-                  ))}
-                <td>
-                  <button onClick={() => handleUserListClick(tenant.id)}>
-                    ユーザ一覧に移動
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
+                  );
+                })}
+              <td>
+                <button onClick={() => handleUserListClick(tenant.id)}>
+                  ユーザ一覧に移動
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </>

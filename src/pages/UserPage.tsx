@@ -12,6 +12,20 @@ import {
   UserAttributesResponse,
 } from "../types";
 
+// ユーザー属性の値を適切にフォーマットする関数
+const formatAttributeValue = (value: any): string => {
+  if (value === undefined || value === null) {
+    return "　";
+  }
+  if (typeof value === "boolean") {
+    return value ? "True" : "False";
+  }
+  if (value instanceof Date) {
+    return value.toString();
+  }
+  return String(value);
+};
+
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [userinfo, setUserinfo] = useState<UserInfo | null>(null);
@@ -214,22 +228,11 @@ const UserPage = () => {
               {userAttributes &&
                 Object.keys(userAttributes).map((key) => {
                   const attribute = userAttributes[key];
+                  const attributeValue =
+                    user.attributes?.[attribute.attribute_name];
                   return (
                     <td key={attribute.attribute_name}>
-                      {user.attributes &&
-                      user.attributes[attribute.attribute_name]
-                        ? typeof user.attributes[attribute.attribute_name] ===
-                          "boolean"
-                          ? user.attributes[attribute.attribute_name]
-                            ? "True"
-                            : "False"
-                          : user.attributes[attribute.attribute_name] instanceof
-                            Date
-                          ? (
-                              user.attributes[attribute.attribute_name] as Date
-                            ).toString()
-                          : String(user.attributes[attribute.attribute_name])
-                        : "　"}
+                      {formatAttributeValue(attributeValue)}
                     </td>
                   );
                 })}

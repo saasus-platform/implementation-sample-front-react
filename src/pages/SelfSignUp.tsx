@@ -13,6 +13,52 @@ import {
   UserInfo,
 } from "../types";
 
+// 属性入力用の共通コンポーネント
+interface AttributeInputProps {
+  attributeName: string;
+  displayName: string;
+  attributeType: string;
+  value: any;
+  onChange: (name: string, value: any) => void;
+}
+
+const AttributeInput = ({
+  attributeName,
+  displayName,
+  attributeType,
+  value,
+  onChange,
+}: AttributeInputProps) => {
+  // 属性タイプに基づいて適切な入力フィールドタイプを決定
+  const inputType =
+    attributeType === "bool"
+      ? "checkbox"
+      : attributeType === "date"
+      ? "date"
+      : attributeType === "number"
+      ? "number"
+      : "text";
+
+  // boolean型の場合はcheckedプロパティを使用、それ以外はvalueプロパティを使用
+  const isBoolean = typeof value === "boolean";
+
+  return (
+    <p>
+      {displayName}：
+      <input
+        type={inputType}
+        checked={isBoolean ? value : undefined}
+        value={!isBoolean ? value || "" : undefined}
+        onChange={(e) => {
+          const newValue =
+            inputType === "checkbox" ? e.target.checked : e.target.value;
+          onChange(attributeName, newValue);
+        }}
+      />
+    </p>
+  );
+};
+
 const SelfSignup = () => {
   const [userAttributes, setUserAttributes] = useState<
     Record<string, UserAttribute>
@@ -166,110 +212,47 @@ const SelfSignup = () => {
           />
         </p>
         <br />
+
         {/* テナント属性セクション */}
-        {tenantAttributes && (
+        {tenantAttributes && Object.keys(tenantAttributes).length > 0 && (
           <fieldset>
             <legend>テナント属性</legend>
-            {Object.keys(tenantAttributes).map((key) => (
-              <p key={key}>
-                {tenantAttributes[key].display_name}：
-                <input
-                  type={
-                    tenantAttributes[key].attribute_type === "bool"
-                      ? "checkbox"
-                      : tenantAttributes[key].attribute_type === "date"
-                      ? "date"
-                      : tenantAttributes[key].attribute_type === "number"
-                      ? "number"
-                      : "text"
-                  }
-                  checked={
-                    tenantAttributeValues &&
-                    typeof tenantAttributeValues[
-                      tenantAttributes[key].attribute_name
-                    ] === "boolean"
-                      ? (tenantAttributeValues[
-                          tenantAttributes[key].attribute_name
-                        ] as boolean)
-                      : undefined
-                  }
-                  value={
-                    tenantAttributeValues &&
-                    typeof tenantAttributeValues[
-                      tenantAttributes[key].attribute_name
-                    ] !== "boolean"
-                      ? (tenantAttributeValues[
-                          tenantAttributes[key].attribute_name
-                        ] as string)
-                      : undefined
-                  }
-                  onChange={(e) => {
-                    const newValue =
-                      e.target.type === "checkbox"
-                        ? e.target.checked
-                        : e.target.value;
-                    handleTenantAttributeChange(
-                      tenantAttributes[key].attribute_name,
-                      newValue
-                    );
-                  }}
+            {Object.keys(tenantAttributes).map((key) => {
+              const attribute = tenantAttributes[key];
+              return (
+                <AttributeInput
+                  key={key}
+                  attributeName={attribute.attribute_name}
+                  displayName={attribute.display_name}
+                  attributeType={attribute.attribute_type}
+                  value={tenantAttributeValues[attribute.attribute_name]}
+                  onChange={handleTenantAttributeChange}
                 />
-              </p>
-            ))}
+              );
+            })}
           </fieldset>
         )}
+
         {/* ユーザー属性セクション */}
-        {userAttributes && (
+        {userAttributes && Object.keys(userAttributes).length > 0 && (
           <fieldset>
             <legend>ユーザー属性</legend>
-            {Object.keys(userAttributes).map((key) => (
-              <p key={key}>
-                {userAttributes[key].display_name}：
-                <input
-                  type={
-                    userAttributes[key].attribute_type === "bool"
-                      ? "checkbox"
-                      : userAttributes[key].attribute_type === "date"
-                      ? "date"
-                      : userAttributes[key].attribute_type === "number"
-                      ? "number"
-                      : "text"
-                  }
-                  checked={
-                    userAttributeValues &&
-                    typeof userAttributeValues[
-                      userAttributes[key].attribute_name
-                    ] === "boolean"
-                      ? (userAttributeValues[
-                          userAttributes[key].attribute_name
-                        ] as boolean)
-                      : undefined
-                  }
-                  value={
-                    userAttributeValues &&
-                    typeof userAttributeValues[
-                      userAttributes[key].attribute_name
-                    ] !== "boolean"
-                      ? (userAttributeValues[
-                          userAttributes[key].attribute_name
-                        ] as string)
-                      : undefined
-                  }
-                  onChange={(e) => {
-                    const newValue =
-                      e.target.type === "checkbox"
-                        ? e.target.checked
-                        : e.target.value;
-                    handleAttributeChange(
-                      userAttributes[key].attribute_name,
-                      newValue
-                    );
-                  }}
+            {Object.keys(userAttributes).map((key) => {
+              const attribute = userAttributes[key];
+              return (
+                <AttributeInput
+                  key={key}
+                  attributeName={attribute.attribute_name}
+                  displayName={attribute.display_name}
+                  attributeType={attribute.attribute_type}
+                  value={userAttributeValues[attribute.attribute_name]}
+                  onChange={handleAttributeChange}
                 />
-              </p>
-            ))}
+              );
+            })}
           </fieldset>
         )}
+
         <button type="submit">サインアップ</button>
       </form>
     </>
