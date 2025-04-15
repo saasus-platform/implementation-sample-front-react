@@ -57,7 +57,6 @@ const Callback = () => {
         break;
       default:
         navigate(`/user/toppage?tenant_id=${res.data.tenants[0].id}`);
-
     }
   };
 
@@ -77,7 +76,7 @@ const Callback = () => {
 
     if (hasTenantLen === 0) {
       // ユーザーがテナントに紐づいていない場合、セルフサインアップ画面へ遷移
-      navigate('/self_sign_up');
+      navigate("/self_sign_up");
     } else if (hasTenantLen > 1) {
       navigate("/tenants");
     } else {
