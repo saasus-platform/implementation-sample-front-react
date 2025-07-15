@@ -157,3 +157,6 @@ export interface MfaStatusResponse {
 export interface MfaSetupResponse {
   qrCodeUrl: string;
 }
+
+// 課金関連の型定義をエクスポート
+export * from './billing';

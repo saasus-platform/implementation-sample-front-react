@@ -303,6 +303,14 @@ const UserPage = () => {
           <div className="space-y-3">
             <div>
               <a
+                href={`/billing?tenant_id=${tenantId}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                課金情報
+              </a>
+            </div>
+            <div>
+              <a
                 href={`/user_register?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
