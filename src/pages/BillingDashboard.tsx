@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck, randomUnixBetween } from "../utils";
+import { idTokenCheck, randomUnixBetween, handleUserListClick } from "../utils";
 import {
   BillingDashboardData,
   MeteringUnitBilling,
@@ -598,6 +598,16 @@ const BillingDashboard = () => {
           </div>
         </Dialog>
       </Transition>
+
+      {/* ユーザー一覧へ戻るボタン */}
+      <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
+        <button
+          onClick={() => handleUserListClick(tenantId!, navigate)}
+          className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow"
+        >
+          ユーザー一覧に戻る
+        </button>
+      </div>
     </div>
   );
 };
