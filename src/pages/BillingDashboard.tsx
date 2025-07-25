@@ -114,11 +114,11 @@ const BillingDashboard = () => {
       console.log("Billing API response:", data);
       setBillingData(data);
 
-      /* ---------- ① 重複排除（空文字も除外） ---------- */
+      /* ---------- ① 重複排除 ---------- */
       const seen = new Set<string>();
       const uniqueMeters: MeteringUnitBilling[] = [];
       for (const u of data.metering_unit_billings) {
-        if (u.metering_unit_name && !seen.has(u.metering_unit_name)) {
+        if (u.metering_unit_type !== "fixed" && !seen.has(u.metering_unit_name)) {
           seen.add(u.metering_unit_name);
           uniqueMeters.push(u);
         }
@@ -145,9 +145,6 @@ const BillingDashboard = () => {
     } catch (error: any) {
       if (isBackendUnavailable(error)) setBackendError(true);
       console.error(error);
-      // } catch (error: any) {
-      //   console.error("Error fetching billing data:", error);
-      //   console.error("Error details:", error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -157,12 +154,14 @@ const BillingDashboard = () => {
     if (!tenantId || !selectedMeterName || delta <= 0 || !selectedPeriod)
       return;
 
+    const nowUnix = Math.floor(Date.now() / 1000);
+    const end = Math.min(selectedPeriod.end, nowUnix);
     // 期間内のランダム秒を生成
-    const ts = randomUnixBetween(selectedPeriod.start, selectedPeriod.end);
+    const ts = randomUnixBetween(selectedPeriod.start, end);
 
     try {
       await axios.post(
-        `${API_ENDPOINT}/metering/${tenantId}/${selectedMeterName}/${ts}`,
+        `${API_ENDPOINT}/billing/metering/${tenantId}/${selectedMeterName}/${ts}`,
         {
           method: isAdd ? "add" : "sub",
           count: delta,
@@ -190,7 +189,7 @@ const BillingDashboard = () => {
   const fetchPeriodOptions = async () => {
     try {
       const res = await axios.get<PlanPeriodOption[]>(
-        `${API_ENDPOINT}/tenant/plan_periods`,
+        `${API_ENDPOINT}/billing/plan_periods`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -217,6 +216,45 @@ const BillingDashboard = () => {
       if (isBackendUnavailable(error)) setBackendError(true);
       console.error(error);
       setLoading(false); // エラー時にも解除
+    }
+  };
+
+  const updateMeterInline = async (
+    meterName: string,
+    isAdd: boolean,
+    count: number
+  ) => {
+    if (!tenantId || !selectedPeriod) return;
+    if (count <= 0) return;
+
+    const nowUnix = Math.floor(Date.now() / 1000);
+    const end = Math.min(selectedPeriod.end, nowUnix);
+    const ts = randomUnixBetween(selectedPeriod.start, end);
+
+    try {
+      await axios.post(
+        `${API_ENDPOINT}/billing/metering/${tenantId}/${meterName}`,
+        {
+          method: isAdd ? "add" : "sub",
+          count,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "X-SaaSus-Referer": "UpdateMeterInline",
+          },
+        }
+      );
+
+      // 更新後に最新データ取得
+      await getBillingData(
+        selectedPeriod.planId,
+        selectedPeriod.start,
+        selectedPeriod.end
+      );
+    } catch (err) {
+      console.error(err);
+      alert("メータ更新に失敗しました");
     }
   };
 
@@ -457,25 +495,71 @@ const BillingDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {billingData.metering_unit_billings.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="py-3 px-4">{item.function_menu_name}</td>
-                  <td className="py-3 px-4 font-medium">
-                    {item.pricing_unit_display_name}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-sm text-gray-600">
-                    {item.metering_unit_name}
-                  </td>
-                  <td className="py-3 px-4">
-                    {formatNumber(item.period_count)}
-                  </td>
-                  <td className="py-3 px-4">{item.currency}</td>
-                  <td className="py-3 px-4 font-semibold">
-                    {getCurrencySymbol(item.currency)}
-                    {formatNumber(item.period_amount)}
-                  </td>
-                </tr>
-              ))}
+              {billingData.metering_unit_billings.map((item, index) => {
+                const now = Math.floor(Date.now() / 1000);
+                const isCurrentPeriod =
+                  selectedPeriod &&
+                  selectedPeriod.start <= now &&
+                  now <= selectedPeriod.end;
+
+                return (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-3 px-4">{item.function_menu_name}</td>
+                    <td className="py-3 px-4 font-medium">
+                      {item.pricing_unit_display_name}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-sm text-gray-600">
+                      {item.metering_unit_name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="min-w-[3.5rem] text-center font-mono text-gray-800">
+                          {item.metering_unit_type !== "fixed"
+                            ? formatNumber(item.period_count)
+                            : "–"}
+                        </span>
+                        {item.metering_unit_type !== "fixed" &&
+                          isCurrentPeriod && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  updateMeterInline(
+                                    item.metering_unit_name,
+                                    true,
+                                    1
+                                  )
+                                }
+                                className="w-6 h-6 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded"
+                                title="1加算"
+                              >
+                                ＋
+                              </button>
+                              <button
+                                onClick={() =>
+                                  updateMeterInline(
+                                    item.metering_unit_name,
+                                    false,
+                                    1
+                                  )
+                                }
+                                className="w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded"
+                                title="1減算"
+                              >
+                                −
+                              </button>
+                            </>
+                          )}
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4">{item.currency}</td>
+                    <td className="py-3 px-4 font-semibold">
+                      {getCurrencySymbol(item.currency)}
+                      {formatNumber(item.period_amount)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

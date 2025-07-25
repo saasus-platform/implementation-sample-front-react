@@ -17,6 +17,7 @@ export interface BillingSummary {
  */
 export interface MeteringUnitBilling {
   metering_unit_name: string;
+  metering_unit_type: "usage" | "fixed" | "tiered"| "tiered_usage";
   function_menu_name: string;
   period_count: number;
   currency: string;
