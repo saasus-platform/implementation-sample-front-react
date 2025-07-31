@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_ENDPOINT, LOGIN_URL } from "./const";
+import { UserInfo, Tenant } from "./types";
 
 type Jwt = {
   [name: string]: string | number | boolean;
@@ -39,5 +40,58 @@ export const idTokenCheck = async (jwtToken: string) => {
       console.log(err);
       window.location.href = LOGIN_URL;
     }
+  }
+};
+
+/**
+ * 指定された UNIX タイムスタンプの範囲内でランダムな整数（秒）を返す
+ * @param start 開始の UNIX タイムスタンプ（秒）
+ * @param end   終了の UNIX タイムスタンプ（秒）
+ * @returns     start 以上 end 以下のランダムな整数
+ */
+export const randomUnixBetween = (start: number, end: number): number => {
+  // Math.random() は 0 <= x < 1 の実数を返す
+  // (end - start + 1) を掛けて範囲を調整し、Math.floor で整数に変換、start を足してオフセット
+  return Math.floor(Math.random() * (end - start + 1)) + start;
+};
+
+/**
+ * テナントIDに基づいてユーザーのロールを取得し、適切なページにリダイレクトする
+ * @param tenantId テナントID
+ * @param navigate React Routerのnavigate関数
+ */
+export const handleUserListClick = async (tenantId: string, navigate: (path: string) => void) => {
+  try {
+    // ロールの取得
+    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
+    const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        Authorization: `Bearer ${jwtToken}`,
+        "X-SaaSus-Referer": "GetRole",
+      },
+      withCredentials: true,
+    });
+
+    const tenant = res.data.tenants.find(
+      (tenant: Tenant) => tenant.id === tenantId
+    );
+
+    const role = tenant?.envs[0]?.roles[0]?.role_name || "";
+
+    // リダイレクト
+    switch (role) {
+      case "sadmin":
+        navigate(`/sadmin/toppage?tenant_id=${tenantId}`);
+        break;
+      case "admin":
+        navigate(`/admin/toppage?tenant_id=${tenantId}`);
+        break;
+      default:
+        navigate(`/user/toppage?tenant_id=${tenantId}`);
+        break;
+    }
+  } catch (error) {
+    console.error("Error fetching user list:", error);
   }
 };
