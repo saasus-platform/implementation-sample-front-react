@@ -104,7 +104,7 @@ const BillingDashboard = () => {
           headers: {
             "X-Requested-With": "XMLHttpRequest",
             Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "GetBillingData",
+            "X-SaaSus-Referer": "Billing Dashboard Page",
           },
           withCredentials: true,
           params,
@@ -169,7 +169,7 @@ const BillingDashboard = () => {
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "UpdateMeter",
+            "X-SaaSus-Referer": buildMeteringReferer("UpdateMeter", isAdd, delta)
           },
         }
       );
@@ -241,7 +241,7 @@ const BillingDashboard = () => {
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "UpdateMeterInline",
+            "X-SaaSus-Referer": buildMeteringReferer("UpdateMeterInline", isAdd, count),
           },
         }
       );
@@ -291,6 +291,16 @@ const BillingDashboard = () => {
       }
     }
   }, [roleName, selectedPeriod, periodOptions]);
+
+  const buildMeteringReferer = (
+    prefix: string,
+    isAdd: boolean,
+    count: number
+  ): string => {
+    // ["add",3] or ["sub",1] という配列を文字列化
+    const payload = JSON.stringify([isAdd ? "add" : "sub", count]);
+    return `${prefix}:${payload}`;
+  };
 
   const formatNumber = (num: number): string => {
     return num.toLocaleString();
@@ -563,6 +573,12 @@ const BillingDashboard = () => {
             </tbody>
           </table>
         </div>
+      </div>
+        {/* ▼ 注意書き */}
+      <div className="mt-2">
+        <span className="ml-2 text-red-600 text-sm">
+          ※Stripe連携を行っている場合、減算や過去のメータに対する変更はできません。
+        </span>
       </div>
       {/* ▼ メータ更新ボタン */}
       {meterOptions.length > 0 && (
