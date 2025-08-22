@@ -334,14 +334,29 @@ const UserPage = () => {
         </div>
       )}
 
-      {/* ログアウトボタン */}
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={handleLogout}
-          className="py-2 px-4 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          ログアウト
-        </button>
+      {/* ナビゲーションリンク */}
+      <div className="mt-6 flex justify-between items-center">
+        {/* テナント一覧に戻るリンク（複数テナントに所属している場合のみ表示） */}
+        {userinfo && userinfo.tenants && userinfo.tenants.length > 1 && (
+          <div>
+            <a
+              href="/tenants"
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              テナント一覧に戻る
+            </a>
+          </div>
+        )}
+        
+        {/* ログアウトボタン */}
+        <div>
+          <button
+            onClick={handleLogout}
+            className="py-2 px-4 bg-gray-600 text-white rounded hover:bg-gray-700"
+          >
+            ログアウト
+          </button>
+        </div>
       </div>
     </div>
   );
