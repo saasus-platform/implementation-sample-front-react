@@ -111,6 +111,16 @@ const UserRegister = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // 空の値を除外したユーザー属性値を作成
+    const filteredUserAttributeValues = Object.fromEntries(
+      Object.entries(userAttributeValues).filter(([_, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (typeof value === "number" && isNaN(value)) return false;
+        return true;
+      })
+    );
+
     try {
       await axios.post(
         `${API_ENDPOINT}/user_register`,
@@ -118,7 +128,7 @@ const UserRegister = () => {
           email,
           password,
           tenantId,
-          userAttributeValues,
+          userAttributeValues: filteredUserAttributeValues,
         },
         {
           headers: {

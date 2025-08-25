@@ -159,14 +159,34 @@ const SelfSignup = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // 空の値を除外したユーザー属性値を作成
+    const filteredUserAttributeValues = Object.fromEntries(
+      Object.entries(userAttributeValues).filter(([_, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (typeof value === "number" && isNaN(value)) return false;
+        return true;
+      })
+    );
+
+    // 空の値を除外したテナント属性値を作成
+    const filteredTenantAttributeValues = Object.fromEntries(
+      Object.entries(tenantAttributeValues).filter(([_, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (typeof value === "number" && isNaN(value)) return false;
+        return true;
+      })
+    );
+
     try {
       // セルフサインアップ処理
       await axios.post(
         `${API_ENDPOINT}/self_sign_up`,
         {
           tenantName,
-          userAttributeValues,
-          tenantAttributeValues,
+          userAttributeValues: filteredUserAttributeValues,
+          tenantAttributeValues: filteredTenantAttributeValues,
         },
         {
           headers: {
