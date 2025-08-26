@@ -123,6 +123,9 @@ const TenantList = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  アクション
+                </th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   テナントID
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -137,14 +140,19 @@ const TenantList = () => {
                       {tenantInfo[0][key].display_name}
                     </th>
                   ))}
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  アクション
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {tenants?.map((tenant: Tenant, tenantIndex: number) => (
                 <tr key={tenant.id} className="hover:bg-gray-50">
+                  <td className="py-3 px-4 whitespace-nowrap">
+                    <button
+                      onClick={() => handleUserListClick(tenant.id)}
+                      className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      ユーザー一覧に移動
+                    </button>
+                  </td>
                   <td className="py-3 px-4 whitespace-nowrap">{tenant.id}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{tenant.name}</td>
                   {tenantInfo[tenantIndex] &&
@@ -159,14 +167,6 @@ const TenantList = () => {
                         </td>
                       );
                     })}
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleUserListClick(tenant.id)}
-                      className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                    >
-                      ユーザー一覧に移動
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
