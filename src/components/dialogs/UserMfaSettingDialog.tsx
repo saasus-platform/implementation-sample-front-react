@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../../const";
 import axios from "axios";
 import { QRCodeCanvas } from "qrcode.react";
@@ -23,7 +24,20 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("SaaSusAccessToken") as string | null
   );
-
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
+  const getActionHeaders = (actionName: string) => {
+    return {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=${actionName}`,
+    };
+  };
   // ダイアログが開いた時にトークンをチェック＆最新のトークンをセット
   useEffect(() => {
     const updateTokensAndCheckStatus = async () => {
@@ -44,10 +58,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       const response = await axios.get<MfaStatusResponse>(
         `${API_ENDPOINT}/mfa_status`,
         {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-          },
+          headers: commonHeaders,
           withCredentials: true,
         }
       );
@@ -81,9 +92,8 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         `${API_ENDPOINT}/mfa_setup`,
         {
           headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-            "X-Access-Token": accessToken,
+            ...commonHeaders,
+            "X-Access-Token": accessToken, // accessTokenを追加
           },
           withCredentials: true,
         }
@@ -113,9 +123,8 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         { verification_code: verificationCode },
         {
           headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-            "X-Access-Token": accessToken,
+            ...getActionHeaders("mfa_verify"),
+            "X-Access-Token": accessToken, // accessTokenを追加
           },
           withCredentials: true,
         }
@@ -143,10 +152,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         `${API_ENDPOINT}/mfa_enable`,
         {},
         {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-          },
+          headers: getActionHeaders("mfa_enable"),
           withCredentials: true,
         }
       );
@@ -165,10 +171,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         `${API_ENDPOINT}/mfa_disable`,
         {},
         {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-          },
+          headers: getActionHeaders("mfa_disable"),
           withCredentials: true,
         }
       );

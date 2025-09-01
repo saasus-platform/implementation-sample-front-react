@@ -6,6 +6,7 @@ import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Callback = () => {
   const location = useLocation();
+  const pagePath = location.pathname;
   const navigate = useNavigate();
   const code = new URLSearchParams(location.search).get("code");
   const [, setCookie] = useCookies(["SaaSusRefreshToken"]);
@@ -16,7 +17,6 @@ const Callback = () => {
     const res = await axios.get(`${API_ENDPOINT}/credentials?code=${code}`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        "X-SaaSus-Referer": "getToken",
       },
       withCredentials: true,
     });
@@ -41,7 +41,7 @@ const Callback = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "getRole",
+        "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,
     });
@@ -67,7 +67,7 @@ const Callback = () => {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "handleUserNavigation",
+        "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,
     });
