@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck, randomUnixBetween, handleUserListClick } from "../utils";
 import {
@@ -42,6 +42,22 @@ const BillingDashboard = () => {
   };
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
+  const getMeteringActionHeaders = (actionName: string, isAdd: boolean, value: number) => {
+    const method = isAdd ? "add" : "sub";
+    return {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=${actionName}&method=${method}&value=${value}`,
+    };
+  };
+
   const urlParams = new URLSearchParams(window.location.search);
   const tenantId = urlParams.get("tenant_id");
 
@@ -60,11 +76,7 @@ const BillingDashboard = () => {
 
     try {
       const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserinfo",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       });
 
@@ -101,11 +113,7 @@ const BillingDashboard = () => {
       const { data } = await axios.get<BillingDashboardData>(
         `${API_ENDPOINT}/billing/dashboard`,
         {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "Billing Dashboard Page",
-          },
+          headers: commonHeaders,
           withCredentials: true,
           params,
         }
@@ -167,10 +175,7 @@ const BillingDashboard = () => {
           count: delta,
         },
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": buildMeteringReferer("UpdateMeter", isAdd, delta)
-          },
+          headers: getMeteringActionHeaders("update_meter", isAdd, delta),
         }
       );
 
@@ -191,10 +196,7 @@ const BillingDashboard = () => {
       const res = await axios.get<PlanPeriodOption[]>(
         `${API_ENDPOINT}/billing/plan_periods`,
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "GetPlanPeriodOptions",
-          },
+          headers: commonHeaders,
           params: { tenant_id: tenantId },
         }
       );
@@ -239,10 +241,7 @@ const BillingDashboard = () => {
           count,
         },
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": buildMeteringReferer("UpdateMeterInline", isAdd, count),
-          },
+          headers: getMeteringActionHeaders("update_meter_inline", isAdd, count),
         }
       );
 
