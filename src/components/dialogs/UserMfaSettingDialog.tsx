@@ -93,7 +93,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         {
           headers: {
             ...commonHeaders,
-            "X-Access-Token": accessToken, // accessTokenを追加
+            "X-Access-Token": accessToken, // 既存のヘッダーに加えて、追加のアクセストークンヘッダーを設定
           },
           withCredentials: true,
         }
@@ -124,7 +124,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
         {
           headers: {
             ...getActionHeaders("mfa_verify"),
-            "X-Access-Token": accessToken, // accessTokenを追加
+            "X-Access-Token": accessToken, // 既存のヘッダーに加えて、追加のアクセストークンヘッダーを設定
           },
           withCredentials: true,
         }
