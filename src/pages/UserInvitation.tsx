@@ -68,6 +68,7 @@ const UserInvitation = () => {
     const postHeaders = {
       ...commonHeaders,
       "X-SaaSus-Referer": `${pagePath}?action=user_invitation`,
+      "X-Access-Token": accessToken, // accessTokenを追加
     };
     try {
       const response = await axios.post(
