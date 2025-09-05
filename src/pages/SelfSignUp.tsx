@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
 import {
@@ -85,6 +85,14 @@ const SelfSignup = () => {
     useState<TenantAttributeValues>({});
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
 
   // ロールによって遷移先を振り分け
   const navigateByRole = async (userInfo: UserInfo) => {
@@ -121,11 +129,7 @@ const SelfSignup = () => {
     const res = await axios.get<UserAttributesResponse>(
       `${API_ENDPOINT}/user_attributes`,
       {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserAttributes",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       }
     );
@@ -137,11 +141,7 @@ const SelfSignup = () => {
     const res = await axios.get<TenantAttributesResponse>(
       `${API_ENDPOINT}/tenant_attributes_list`,
       {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetTenantAttributes",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       }
     );
@@ -179,6 +179,11 @@ const SelfSignup = () => {
       })
     );
 
+    const postHeaders = {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=self_sign_up`,
+    };
+
     try {
       // セルフサインアップ処理
       await axios.post(
@@ -189,11 +194,7 @@ const SelfSignup = () => {
           tenantAttributeValues: filteredTenantAttributeValues,
         },
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-            "X-SaaSus-Referer": "handleSubmitSelfSignUp",
-          },
+          headers: postHeaders,
           withCredentials: true,
         }
       );
@@ -201,11 +202,7 @@ const SelfSignup = () => {
 
       // ユーザー情報を取得してロールで遷移先を判断
       const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserInfo",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       });
       const userInfo = res.data;

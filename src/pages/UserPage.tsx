@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
 import {
@@ -38,17 +38,26 @@ const UserPage = () => {
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [roleName, setRoleName] = useState<string>("");
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
+  const getActionHeaders = (actionName: string) => {
+    return {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=${actionName}`,
+    };
+  };
   // ユーザ一覧取得
   const getUsers = async (tenantId: string | null) => {
     if (!tenantId) return;
 
     const res = await axios.get<User[]>(`${API_ENDPOINT}/users`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUsers",
-      },
+      headers: commonHeaders,
       withCredentials: true,
       params: {
         tenant_id: tenantId,
@@ -62,11 +71,7 @@ const UserPage = () => {
     if (!tenantId) return;
 
     const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserinfo",
-      },
+      headers: commonHeaders,
       withCredentials: true,
     });
 
@@ -84,11 +89,7 @@ const UserPage = () => {
 
       if (planId !== null && planId !== undefined) {
         const plan = await axios.get<PlanInfo>(`${API_ENDPOINT}/pricing_plan`, {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-            "X-SaaSus-Referer": "GetPricingPlan",
-          },
+          headers: commonHeaders,
           withCredentials: true,
           params: {
             plan_id: planId,
@@ -104,11 +105,7 @@ const UserPage = () => {
     const res = await axios.get<UserAttributesResponse>(
       `${API_ENDPOINT}/user_attributes`,
       {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserAttributes",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       }
     );
@@ -121,10 +118,7 @@ const UserPage = () => {
         `${API_ENDPOINT}/logout`,
         {},
         {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Authorization: `Bearer ${jwtToken}`,
-          },
+          headers: getActionHeaders("logout"),
           withCredentials: true,
         }
       );
@@ -162,10 +156,7 @@ const UserPage = () => {
       if (!tenantId) return;
 
       await axios.delete(`${API_ENDPOINT}/user_delete`, {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "handleDeleteUser",
-        },
+        headers: getActionHeaders("user_delete"),
         withCredentials: true,
         data: {
           tenantId: tenantId,

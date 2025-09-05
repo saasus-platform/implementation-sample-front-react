@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
@@ -32,15 +32,19 @@ const TenantList = () => {
   const [tenantInfo, setTenantInfo] = useState<any[]>([]);
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
 
   // ログインユーザの情報と所属テナント情報を取得
   const GetUserinfo = async () => {
     const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserinfo",
-      },
+      headers: commonHeaders,
       withCredentials: true,
     });
 
@@ -49,11 +53,7 @@ const TenantList = () => {
         const res = await axios.get<TenantAttributesResponse>(
           `${API_ENDPOINT}/tenant_attributes`,
           {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-              Authorization: `Bearer ${jwtToken}`,
-              "X-SaaSus-Referer": "GetTenantAttribute",
-            },
+            headers: commonHeaders,
             withCredentials: true,
             params: {
               tenant_id: tenant.id,
@@ -74,11 +74,7 @@ const TenantList = () => {
       // ロールの取得
       const jwtToken = window.localStorage.getItem("SaaSusIdToken");
       const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetRole",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       });
 
