@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
-import { idTokenCheck } from "../utils";
+import { idTokenCheck, handleUserListClick } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
 
 // テナント属性の値を適切にフォーマットする関数
@@ -69,38 +69,6 @@ const TenantList = () => {
     setTenantInfo(tenantInfo);
   };
 
-  const handleUserListClick = async (tenantId: string) => {
-    try {
-      // ロールの取得
-      const jwtToken = window.localStorage.getItem("SaaSusIdToken");
-      const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-        headers: commonHeaders,
-        withCredentials: true,
-      });
-
-      const tenant = res.data.tenants.find(
-        (tenant: Tenant) => tenant.id === tenantId
-      );
-
-      const role = tenant?.envs[0]?.roles[0]?.role_name || "";
-
-      // リダイレクト
-      switch (role) {
-        case "sadmin":
-          navigate(`/sadmin/toppage?tenant_id=${tenantId}`);
-          break;
-        case "admin":
-          navigate(`/admin/toppage?tenant_id=${tenantId}`);
-          break;
-        default:
-          navigate(`/user/toppage?tenant_id=${tenantId}`);
-          break;
-      }
-    } catch (error) {
-      console.error("Error fetching user list:", error);
-    }
-  };
-
   useEffect(() => {
     const startTenantListPage = async () => {
       await idTokenCheck(jwtToken);
@@ -143,7 +111,7 @@ const TenantList = () => {
                 <tr key={tenant.id} className="hover:bg-gray-50">
                   <td className="py-3 px-4 whitespace-nowrap">
                     <button
-                      onClick={() => handleUserListClick(tenant.id)}
+                      onClick={() => handleUserListClick(tenant.id, navigate)}
                       className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                     >
                       ユーザー一覧に移動

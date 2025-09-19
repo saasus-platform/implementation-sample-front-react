@@ -12,6 +12,7 @@ import TenantList from "./pages/TenantList";
 import UserRegister from "./pages/UserRegister";
 import DeleteUserLog from "./pages/DeleteUserLog";
 import SelfSignUp from "./pages/SelfSignUp";
+import BillingDashboard from "./pages/BillingDashboard";
 import HeaderUserbox from "./components/header/HeaderUserbox";
 import UserInvitation from "./pages/UserInvitation";
 
@@ -39,6 +40,7 @@ const AppContent = () => {
           <Route path="/delete_user_log" element={<DeleteUserLog />} />
           <Route path="/self_sign_up" element={<SelfSignUp />} />
           <Route path="/user_invitation" element={<UserInvitation />} />
+          <Route path="/billing" element={<BillingDashboard />} />
         </Route>
       </Routes>
     </>
