@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
 import {
@@ -77,17 +77,21 @@ const UserRegister = () => {
     useState<UserAttributeValues>({});
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
 
   // ユーザー属性情報を取得
   const GetUserAttributes = async () => {
     const res = await axios.get<UserAttributesResponse>(
       `${API_ENDPOINT}/user_attributes`,
       {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserAttributes",
-        },
+        headers: commonHeaders,
         withCredentials: true,
       }
     );
@@ -111,6 +115,20 @@ const UserRegister = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // 空の値を除外したユーザー属性値を作成
+    const filteredUserAttributeValues = Object.fromEntries(
+      Object.entries(userAttributeValues).filter(([_, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (typeof value === "number" && isNaN(value)) return false;
+        return true;
+      })
+    );
+
+    const postHeaders = {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=register_user`,
+    };
     try {
       await axios.post(
         `${API_ENDPOINT}/user_register`,
@@ -118,14 +136,10 @@ const UserRegister = () => {
           email,
           password,
           tenantId,
-          userAttributeValues,
+          userAttributeValues: filteredUserAttributeValues,
         },
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-            "X-SaaSus-Referer": "handleSubmitUserRegist",
-          },
+          headers: postHeaders,
           withCredentials: true,
         }
       );

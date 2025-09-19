@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 
 const Auth = () => {
+  const location = useLocation();
+
   // ログインユーザの情報を取得
   const getUserInfo = async () => {
     try {
@@ -12,7 +14,7 @@ const Auth = () => {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetUserInfo",
+          "X-SaaSus-Referer": location.pathname,
         },
         withCredentials: true,
       });

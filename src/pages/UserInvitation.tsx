@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { idTokenCheck } from "../utils";
 import { ApiError, Invitation } from "../types";
@@ -13,7 +14,14 @@ const UserInvitation = () => {
     "SaaSusAccessToken"
   ) as string;
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
   // ユーザ一覧取得
   const getInvitations = async (tenantId: string | null) => {
     if (!tenantId) return;
@@ -57,6 +65,11 @@ const UserInvitation = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const postHeaders = {
+      ...commonHeaders,
+      "X-SaaSus-Referer": `${pagePath}?action=user_invitation`,
+      "X-Access-Token": accessToken, // accessTokenを追加
+    };
     try {
       const response = await axios.post(
         `${API_ENDPOINT}/user_invitation`,
@@ -65,11 +78,7 @@ const UserInvitation = () => {
           tenantId,
         },
         {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-            "X-Access-Token": accessToken,
-          },
+          headers: postHeaders,
           withCredentials: true,
         }
       );

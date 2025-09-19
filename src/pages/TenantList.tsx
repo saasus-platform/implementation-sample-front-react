@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck, handleUserListClick } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
@@ -32,15 +32,19 @@ const TenantList = () => {
   const [tenantInfo, setTenantInfo] = useState<any[]>([]);
   const navigate = useNavigate();
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
 
   // ログインユーザの情報と所属テナント情報を取得
   const GetUserinfo = async () => {
     const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserinfo",
-      },
+      headers: commonHeaders,
       withCredentials: true,
     });
 
@@ -49,11 +53,7 @@ const TenantList = () => {
         const res = await axios.get<TenantAttributesResponse>(
           `${API_ENDPOINT}/tenant_attributes`,
           {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-              Authorization: `Bearer ${jwtToken}`,
-              "X-SaaSus-Referer": "GetTenantAttribute",
-            },
+            headers: commonHeaders,
             withCredentials: true,
             params: {
               tenant_id: tenant.id,
@@ -68,7 +68,6 @@ const TenantList = () => {
     setTenants(res.data.tenants);
     setTenantInfo(tenantInfo);
   };
-
 
   useEffect(() => {
     const startTenantListPage = async () => {
@@ -88,6 +87,9 @@ const TenantList = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  アクション
+                </th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   テナントID
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -102,14 +104,19 @@ const TenantList = () => {
                       {tenantInfo[0][key].display_name}
                     </th>
                   ))}
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  アクション
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {tenants?.map((tenant: Tenant, tenantIndex: number) => (
                 <tr key={tenant.id} className="hover:bg-gray-50">
+                  <td className="py-3 px-4 whitespace-nowrap">
+                    <button
+                      onClick={() => handleUserListClick(tenant.id, navigate)}
+                      className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      ユーザー一覧に移動
+                    </button>
+                  </td>
                   <td className="py-3 px-4 whitespace-nowrap">{tenant.id}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{tenant.name}</td>
                   {tenantInfo[tenantIndex] &&
@@ -124,14 +131,6 @@ const TenantList = () => {
                         </td>
                       );
                     })}
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleUserListClick(tenant.id, navigate)}
-                      className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                    >
-                      ユーザー一覧に移動
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>

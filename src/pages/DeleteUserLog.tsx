@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck } from "../utils";
 import { DeletedUser, UserInfo } from "../types";
@@ -9,18 +10,21 @@ const DeleteUserLog = () => {
   const [userinfo, setUserinfo] = useState<UserInfo | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
   let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-
+  const location = useLocation();
+  const pagePath = location.pathname;
+  // ページ内で共通して使用するヘッダーを定義
+  const commonHeaders = {
+    "X-Requested-With": "XMLHttpRequest",
+    Authorization: `Bearer ${jwtToken}`,
+    "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
+  };
   // ユーザー削除ログを取得
   const GetDeleteUsers = async (tenantId: string) => {
     if (!userinfo) return;
     const res = await axios.get<DeletedUser[]>(
       `${API_ENDPOINT}/delete_user_log`,
       {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
-          "X-SaaSus-Referer": "GetDeleteUsers",
-        },
+        headers: commonHeaders,
         withCredentials: true,
         params: {
           tenant_id: tenantId,
@@ -34,11 +38,7 @@ const DeleteUserLog = () => {
   // ログインユーザの情報を取得
   const GetUserinfo = async () => {
     const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetUserinfo",
-      },
+      headers: commonHeaders,
       withCredentials: true,
     });
     setUserinfo(res.data);
