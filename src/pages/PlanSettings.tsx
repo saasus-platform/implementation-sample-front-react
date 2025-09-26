@@ -37,11 +37,13 @@ interface PlanUpdateData {
   using_next_plan_from?: number;
 }
 
-// APIエラーレスポンスの型定義
+// APIエラーレスポンスの型定義（複数形式対応）
 interface ApiErrorResponse {
   response?: {
     data?: {
-      error?: string;
+      error?: string;    // Go形式: {"error": "message"}
+      detail?: string;   // FastAPI形式: {"detail": "message"}
+      message?: string;  // その他の形式: {"message": "message"}
     };
   };
   message?: string;
@@ -170,9 +172,20 @@ const PlanSettings = () => {
   const handleApiError = (error: unknown, fallbackMessage: string): string => {
     const apiError = error as ApiErrorResponse;
     
-    // APIエラーメッセージの優先順位
+    // APIエラーメッセージの優先順位（複数形式対応）
     if (apiError.response?.data?.error) {
+      // Go形式: {"error": "message"}
       return apiError.response.data.error;
+    }
+    
+    if (apiError.response?.data?.detail) {
+      // FastAPI形式: {"detail": "message"}
+      return apiError.response.data.detail;
+    }
+    
+    if (apiError.response?.data?.message) {
+      // その他の形式: {"message": "message"}
+      return apiError.response.data.message;
     }
     
     if (apiError.message) {
