@@ -56,11 +56,16 @@ export const randomUnixBetween = (start: number, end: number): number => {
 };
 
 /**
- * テナントIDに基づいてユーザーのロールを取得し、適切なページにリダイレクトする
+ * ユーザーのロールに応じて適切なユーザーページに遷移する関数
  * @param tenantId テナントID
  * @param navigate React Routerのnavigate関数
+ * @param pagePath 現在のページパス
  */
-export const handleUserListClick = async (tenantId: string, navigate: (path: string) => void) => {
+export const navigateToUserPageByRole = async (
+  tenantId: string, 
+  navigate: (path: string) => void,
+  pagePath: string
+) => {
   try {
     // ロールの取得
     const jwtToken = window.localStorage.getItem("SaaSusIdToken");
@@ -68,7 +73,7 @@ export const handleUserListClick = async (tenantId: string, navigate: (path: str
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         Authorization: `Bearer ${jwtToken}`,
-        "X-SaaSus-Referer": "GetRole",
+        "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,
     });
@@ -79,7 +84,7 @@ export const handleUserListClick = async (tenantId: string, navigate: (path: str
 
     const role = tenant?.envs[0]?.roles[0]?.role_name || "";
 
-    // リダイレクト
+    // ロールに応じてリダイレクト
     switch (role) {
       case "sadmin":
         navigate(`/sadmin/toppage?tenant_id=${tenantId}`);
@@ -92,6 +97,9 @@ export const handleUserListClick = async (tenantId: string, navigate: (path: str
         break;
     }
   } catch (error) {
-    console.error("Error fetching user list:", error);
+    console.error("ユーザー情報の取得に失敗しました:", error);
+    // エラーの場合はデフォルトでuser/toppageに遷移
+    navigate(`/user/toppage?tenant_id=${tenantId}`);
   }
 };
+

@@ -50,12 +50,51 @@ export type PlanPeriodOption = {
   end: number;
 };
 
+/**
+ * 税率情報の型定義
+ */
 export interface TaxRate {
   id: string;
-  name: string;
   display_name: string;
   percentage: number;
-  inclusive: boolean;
-  country?: string;
+  inclusive?: boolean;
   description?: string;
+}
+
+/**
+ * プラン情報の型定義
+ */
+export interface PlanInfo {
+  display_name: string;
+  description?: string;
+  tax_rate?: number;
+}
+
+/**
+ * 料金プランの型定義
+ */
+export interface PricingPlan {
+  id: string;
+  display_name: string;
+  description: string;
+  name: string;
+  used: boolean;
+  pricing_menus: PricingMenu[];
+}
+
+/**
+ * 料金メニューの型定義
+ */
+export interface PricingMenu {
+  display_name: string;
+  units: PricingUnit[];
+}
+
+/**
+ * 料金単位の型定義
+ */
+export interface PricingUnit {
+  id: string;
+  name: string;
+  [key: string]: unknown;
 }

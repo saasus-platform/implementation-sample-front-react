@@ -329,6 +329,15 @@ const UserPage = () => {
                 情報が検証され、正常に動作中になっている必要があります。
               </span>
             </div>
+            <div>
+              <a
+                href={`/plan-settings?tenant_id=${tenantId}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                プラン設定
+              </a>
+            </div>
+
           </div>
         </div>
       )}
