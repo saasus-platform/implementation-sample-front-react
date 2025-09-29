@@ -6,11 +6,23 @@ import { idTokenCheck, navigateToUserPageByRole } from "../utils";
 import { Tenant } from "../types";
 import { PlanInfo, TaxRate, PricingPlan } from "../types/billing";
 
+// ユーティリティ関数
+const formatToDateTimeLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 // 定数定義
 const PLAN_SETTINGS_CONSTANTS = {
   DELAYS: {
     PLAN_CHANGE_SECONDS: 300, // 5分
     EDIT_LOCK_THRESHOLD_SECONDS: 600, // 10分
+    MIN_CUSTOM_DATE_MINUTES: 10, // カスタム日時の最小値（分）
+    MIN_DATETIME_MINUTES: 5, // datetime-localの最小値（分）
   },
   MESSAGES: {
     PLAN_UPDATE_SUCCESS: "プランの変更が完了しました。",
@@ -61,7 +73,11 @@ const PlanSettings = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>("");
   const [usingNextPlanFrom, setUsingNextPlanFrom] = useState<string>("immediate");
-  const [customDate, setCustomDate] = useState<string>("");
+  const [customDate, setCustomDate] = useState<string>(() => {
+    // 初期値を10分後に設定（datetime-local形式）
+    const tenMinutesLater = new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_CUSTOM_DATE_MINUTES * 60 * 1000);
+    return formatToDateTimeLocal(tenMinutesLater);
+  });
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [showCompletedModal, setShowCompletedModal] = useState<boolean>(false);
@@ -69,6 +85,7 @@ const PlanSettings = () => {
   const [cancelLoading, setCancelLoading] = useState<boolean>(false);
   const [showReservationCancelModal, setShowReservationCancelModal] = useState<boolean>(false);
   const [reservationCancelLoading, setReservationCancelLoading] = useState<boolean>(false);
+  const [dateValidationError, setDateValidationError] = useState<string>("");
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -609,13 +626,46 @@ const PlanSettings = () => {
                 <input
                   type="datetime-local"
                   value={customDate}
-                  onChange={(e) => setCustomDate(e.target.value)}
-                  min={new Date().toISOString().slice(0, 16)}
+                  onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    const fiveMinutesLater = new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_DATETIME_MINUTES * 60 * 1000);
+                    const minDateString = formatToDateTimeLocal(fiveMinutesLater);
+                    
+                    // 選択された日時が5分後より前の場合は5分後に設定
+                    if (selectedDate < minDateString) {
+                      setCustomDate(minDateString);
+                      setDateValidationError(`5分後の日時より前は選択できません。${minDateString}に設定しました。`);
+                      // 3秒後にエラーメッセージを消す
+                      setTimeout(() => setDateValidationError(""), 3000);
+                    } else {
+                      setCustomDate(selectedDate);
+                      setDateValidationError("");
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const selectedDate = e.target.value;
+                    const fiveMinutesLater = new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_DATETIME_MINUTES * 60 * 1000);
+                    const minDateString = formatToDateTimeLocal(fiveMinutesLater);
+                    
+                    // フォーカスが外れた時にもバリデーション（テキスト入力時用）
+                    if (selectedDate && selectedDate < minDateString) {
+                      setCustomDate(minDateString);
+                      setDateValidationError(`5分後の日時より前は選択できません。${minDateString}に設定しました。`);
+                      // 3秒後にエラーメッセージを消す
+                      setTimeout(() => setDateValidationError(""), 3000);
+                    }
+                  }}
+                  min={formatToDateTimeLocal(new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_DATETIME_MINUTES * 60 * 1000))}
                   disabled={!canEdit()}
                   className={`w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     !canEdit() ? 'bg-gray-100 cursor-not-allowed' : ''
                   }`}
                 />
+                {dateValidationError && (
+                  <div className="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+                    {dateValidationError}
+                  </div>
+                )}
               </div>
             )}
           </div>
