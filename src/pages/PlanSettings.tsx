@@ -261,6 +261,7 @@ const PlanSettings = () => {
       await executePlanUpdate(updateData);
 
       // 成功時の処理
+      setUpdateLoading(false);
       setShowConfirmModal(false);
       setShowCompletedModal(true);
     } catch (error) {
