@@ -21,6 +21,8 @@ const PLAN_SETTINGS_CONSTANTS = {
     PRICING_PLANS_ERROR: "プラン一覧の取得に失敗しました。",
     TAX_RATES_ERROR: "税率一覧の取得に失敗しました。",
     MISSING_TENANT_OR_PLAN: "テナントIDまたはプランIDが設定されていません。",
+    NOT_IMPLEMENTED: "この機能はまだ実装されていません。",
+    NETWORK_ERROR: "ネットワークエラー、CORS制限、またはこの機能が未実装の可能性があります。",
   },
   UI: {
     IMMEDIATE_LABEL: "すぐ反映（5分後）",
@@ -40,6 +42,7 @@ interface PlanUpdateData {
 // APIエラーレスポンスの型定義（複数形式対応）
 interface ApiErrorResponse {
   response?: {
+    status?: number;     // HTTPステータスコード
     data?: {
       error?: string;    // Go形式: {"error": "message"}
       detail?: string;   // FastAPI形式: {"detail": "message"}
@@ -172,18 +175,28 @@ const PlanSettings = () => {
   const handleApiError = (error: unknown, fallbackMessage: string): string => {
     const apiError = error as ApiErrorResponse;
     
+    // ネットワークエラーまたはレスポンスなしの場合
+    if (!apiError.response) {
+      return PLAN_SETTINGS_CONSTANTS.MESSAGES.NETWORK_ERROR;
+    }
+    
+    // 404エラーの場合（未実装機能）
+    if (apiError.response.status === 404) {
+      return PLAN_SETTINGS_CONSTANTS.MESSAGES.NOT_IMPLEMENTED;
+    }
+    
     // APIエラーメッセージの優先順位（複数形式対応）
-    if (apiError.response?.data?.error) {
+    if (apiError.response.data?.error) {
       // Go形式: {"error": "message"}
       return apiError.response.data.error;
     }
     
-    if (apiError.response?.data?.detail) {
+    if (apiError.response.data?.detail) {
       // FastAPI形式: {"detail": "message"}
       return apiError.response.data.detail;
     }
     
-    if (apiError.response?.data?.message) {
+    if (apiError.response.data?.message) {
       // その他の形式: {"message": "message"}
       return apiError.response.data.message;
     }
