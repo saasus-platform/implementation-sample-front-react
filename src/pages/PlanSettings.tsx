@@ -1,10 +1,12 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { idTokenCheck, navigateToUserPageByRole } from "../utils";
 import { Tenant } from "../types";
 import { PlanInfo, TaxRate, PricingPlan } from "../types/billing";
+import ErrorDialog from "../components/dialogs/ErrorDialog";
+import { useErrorDialog } from "../hooks/useErrorDialog";
 
 // ユーティリティ関数
 const formatToDateTimeLocal = (date: Date): string => {
@@ -86,6 +88,7 @@ const PlanSettings = () => {
   const [showReservationCancelModal, setShowReservationCancelModal] = useState<boolean>(false);
   const [reservationCancelLoading, setReservationCancelLoading] = useState<boolean>(false);
   const [dateValidationError, setDateValidationError] = useState<string>("");
+  const { showErrorModal, errorMessage, showError, hideError } = useErrorDialog();
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -183,10 +186,7 @@ const PlanSettings = () => {
     }
   };
 
-  // エラー表示の統一処理
-  const showError = (message: string) => {
-    alert(message); // 後でトーストやモーダルに置き換え可能
-  };
+  // エラー表示の統一処理（useErrorDialogフックから取得）
 
   // 汎用エラーハンドリング関数
   const handleApiError = (error: unknown, fallbackMessage: string): string => {
@@ -239,7 +239,10 @@ const PlanSettings = () => {
 
     // カスタム日時が指定されている場合のみ using_next_plan_from を設定
     if (usingNextPlanFrom === "custom" && customDate) {
-      updateData.using_next_plan_from = Math.floor(new Date(customDate).getTime() / 1000);
+      const date = new Date(customDate);
+      if (!isNaN(date.getTime())) {
+        updateData.using_next_plan_from = Math.floor(date.getTime() / 1000);
+      }
     }
 
     return updateData;
@@ -401,7 +404,8 @@ const PlanSettings = () => {
     
     setReservationCancelLoading(true);
     try {
-      // 予約を取り消すために、プラン更新APIを空のリクエストボディで呼び出す
+      // NOTE: 空オブジェクトでの予約取り消しはSaaSus APIの仕様に合わせている
+      // バックエンドとフロントエンドで一貫性を保つため、同じ実装を採用
       await axios.put(
         `${API_ENDPOINT}/tenants/${tenantId}/plan`,
         {},
@@ -591,7 +595,7 @@ const PlanSettings = () => {
             </select>
           </div>
 
-          {/* 反映び */}
+          {/* 反映日 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               反映日
@@ -628,6 +632,10 @@ const PlanSettings = () => {
                   value={customDate}
                   onChange={(e) => {
                     const selectedDate = e.target.value;
+                    
+                    // ユーザーが入力を開始したらエラーメッセージをクリア
+                    setDateValidationError("");
+                    
                     const fiveMinutesLater = new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_DATETIME_MINUTES * 60 * 1000);
                     const minDateString = formatToDateTimeLocal(fiveMinutesLater);
                     
@@ -635,11 +643,8 @@ const PlanSettings = () => {
                     if (selectedDate < minDateString) {
                       setCustomDate(minDateString);
                       setDateValidationError(`5分後の日時より前は選択できません。${minDateString}に設定しました。`);
-                      // 3秒後にエラーメッセージを消す
-                      setTimeout(() => setDateValidationError(""), 3000);
                     } else {
                       setCustomDate(selectedDate);
-                      setDateValidationError("");
                     }
                   }}
                   onBlur={(e) => {
@@ -651,8 +656,6 @@ const PlanSettings = () => {
                     if (selectedDate && selectedDate < minDateString) {
                       setCustomDate(minDateString);
                       setDateValidationError(`5分後の日時より前は選択できません。${minDateString}に設定しました。`);
-                      // 3秒後にエラーメッセージを消す
-                      setTimeout(() => setDateValidationError(""), 3000);
                     }
                   }}
                   min={formatToDateTimeLocal(new Date(Date.now() + PLAN_SETTINGS_CONSTANTS.DELAYS.MIN_DATETIME_MINUTES * 60 * 1000))}
@@ -825,6 +828,13 @@ const PlanSettings = () => {
           </div>
         </div>
       )}
+
+      {/* エラーダイアログ */}
+      <ErrorDialog
+        open={showErrorModal}
+        message={errorMessage}
+        onClose={hideError}
+      />
     </div>
   );
 };
