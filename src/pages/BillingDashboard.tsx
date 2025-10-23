@@ -2,14 +2,17 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck, randomUnixBetween, handleUserListClick } from "../utils";
+import {
+  idTokenCheck,
+  randomUnixBetween,
+  navigateToUserPageByRole,
+} from "../utils";
+import { UserInfo, Tenant } from "../types";
 import {
   BillingDashboardData,
   MeteringUnitBilling,
   PlanPeriodOption,
-  UserInfo,
-  Tenant,
-} from "../types";
+} from "../types/billing";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -50,7 +53,11 @@ const BillingDashboard = () => {
     Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
-  const getMeteringActionHeaders = (actionName: string, isAdd: boolean, value: number) => {
+  const getMeteringActionHeaders = (
+    actionName: string,
+    isAdd: boolean,
+    value: number
+  ) => {
     const method = isAdd ? "add" : "sub";
     return {
       ...commonHeaders,
@@ -126,7 +133,10 @@ const BillingDashboard = () => {
       const seen = new Set<string>();
       const uniqueMeters: MeteringUnitBilling[] = [];
       for (const u of data.metering_unit_billings) {
-        if (u.metering_unit_type !== "fixed" && !seen.has(u.metering_unit_name)) {
+        if (
+          u.metering_unit_type !== "fixed" &&
+          !seen.has(u.metering_unit_name)
+        ) {
           seen.add(u.metering_unit_name);
           uniqueMeters.push(u);
         }
@@ -229,10 +239,6 @@ const BillingDashboard = () => {
     if (!tenantId || !selectedPeriod) return;
     if (count <= 0) return;
 
-    const nowUnix = Math.floor(Date.now() / 1000);
-    const end = Math.min(selectedPeriod.end, nowUnix);
-    const ts = randomUnixBetween(selectedPeriod.start, end);
-
     try {
       await axios.post(
         `${API_ENDPOINT}/billing/metering/${tenantId}/${meterName}`,
@@ -241,7 +247,11 @@ const BillingDashboard = () => {
           count,
         },
         {
-          headers: getMeteringActionHeaders("update_meter_inline", isAdd, count),
+          headers: getMeteringActionHeaders(
+            "update_meter_inline",
+            isAdd,
+            count
+          ),
         }
       );
 
@@ -290,16 +300,6 @@ const BillingDashboard = () => {
       }
     }
   }, [roleName, selectedPeriod, periodOptions]);
-
-  const buildMeteringReferer = (
-    prefix: string,
-    isAdd: boolean,
-    count: number
-  ): string => {
-    // ["add",3] or ["sub",1] という配列を文字列化
-    const payload = JSON.stringify([isAdd ? "add" : "sub", count]);
-    return `${prefix}:${payload}`;
-  };
 
   const formatNumber = (num: number): string => {
     return num.toLocaleString();
@@ -573,7 +573,7 @@ const BillingDashboard = () => {
           </table>
         </div>
       </div>
-        {/* ▼ 注意書き */}
+      {/* ▼ 注意書き */}
       <div className="mt-2">
         <span className="ml-2 text-red-600 text-sm">
           ※Stripe連携を行っている場合、減算や過去のメータに対する変更はできません。
@@ -701,7 +701,9 @@ const BillingDashboard = () => {
       {/* ユーザー一覧へ戻るボタン */}
       <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
         <button
-          onClick={() => handleUserListClick(tenantId!, navigate)}
+          onClick={() =>
+            navigateToUserPageByRole(tenantId!, navigate, pagePath)
+          }
           className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow"
         >
           ユーザー一覧に戻る

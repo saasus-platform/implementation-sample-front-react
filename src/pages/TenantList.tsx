@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
-import { idTokenCheck, handleUserListClick } from "../utils";
+import { idTokenCheck, navigateToUserPageByRole } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
 
 // テナント属性の値を適切にフォーマットする関数
@@ -111,7 +111,7 @@ const TenantList = () => {
                 <tr key={tenant.id} className="hover:bg-gray-50">
                   <td className="py-3 px-4 whitespace-nowrap">
                     <button
-                      onClick={() => handleUserListClick(tenant.id, navigate)}
+                      onClick={() => navigateToUserPageByRole(tenant.id, navigate, pagePath)}
                       className="py-1 px-3 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                     >
                       ユーザー一覧に移動

@@ -82,6 +82,15 @@ export interface TenantAttributesResponse {
 }
 
 /**
+ * プラン予約情報の型定義
+ */
+export interface PlanReservation {
+  next_plan_id?: string;
+  using_next_plan_from?: number;
+  next_plan_tax_rate_id?: string;
+}
+
+/**
  * テナント情報の型定義
  */
 export interface Tenant {
@@ -90,6 +99,11 @@ export interface Tenant {
   envs: Environment[];
   plan_id?: string;
   user_attribute?: UserAttributeValues;
+  plan_reservation?: PlanReservation;
+  tax_rate_id?: string;
+  // SaaSus PlatformのAPIレスポンスに含まれる予約情報
+  next_plan_id?: string;
+  using_next_plan_from?: number;
 }
 
 /**
@@ -134,15 +148,6 @@ export interface Invitation {
   envs?: Environment[];
 }
 
-/**
- * プラン情報の型定義
- */
-export interface PlanInfo {
-  display_name: string;
-  description?: string;
-  amount?: number;
-  currency?: string;
-}
 
 /**
  * MFAステータスレスポンスの型定義
