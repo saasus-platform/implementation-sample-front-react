@@ -1,10 +1,10 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { UserInfo } from "../types";
 
 interface UserContextType {
   userInfo: UserInfo | null;
-  setUserInfo: React.Dispatch<React.SetStateAction<UserInfo | null>>;
+  setUserInfo: Dispatch<SetStateAction<UserInfo | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);

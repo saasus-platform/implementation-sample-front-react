@@ -124,7 +124,7 @@ export interface UserInfo {
   id?: string;
   email: string;
   sign_in_id?: string;
-  user_attribute?: Record<string, string | number | boolean | Date | undefined>;
+  user_attribute?: UserAttributeValues;
   tenants: Tenant[];
 }
 

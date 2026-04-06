@@ -27,7 +27,9 @@ const formatAttributeValue = (value: any): string => {
 };
 
 const getUserDisplayId = (email?: string, signInId?: string): string => {
-  return email?.trim() || signInId?.trim() || "　";
+  const emailDisplayId = email?.trim();
+  const signInDisplayId = signInId?.trim();
+  return emailDisplayId || signInDisplayId || "";
 };
 
 const UserPage = () => {
@@ -193,7 +195,7 @@ const UserPage = () => {
             </div>
             <div className="mb-3">
               <span className="font-medium text-gray-600">
-                メールアドレス：
+                メールアドレス / ログインID：
               </span>
               <span>
                 {getUserDisplayId(userinfo?.email, userinfo?.sign_in_id) ||
