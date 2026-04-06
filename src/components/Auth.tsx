@@ -2,15 +2,18 @@ import axios from "axios";
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { useUser } from "../contexts/UserContext";
+import { UserInfo } from "../types";
 
 const Auth = () => {
   const location = useLocation();
+  const { setUserInfo } = useUser();
 
   // ログインユーザの情報を取得
   const getUserInfo = async () => {
     try {
       const jwtToken = window.localStorage.getItem("SaaSusIdToken");
-      const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
+      const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           Authorization: `Bearer ${jwtToken}`,
@@ -28,8 +31,12 @@ const Auth = () => {
     getUserInfo().then((res) => {
       // ログインユーザの情報が取得できない（ログインが確認できない）場合、ログイン画面に遷移
       if (!res) {
+        setUserInfo(null);
         window.location.href = LOGIN_URL;
+        return;
       }
+
+      setUserInfo(res.data);
     });
   }, []);
 

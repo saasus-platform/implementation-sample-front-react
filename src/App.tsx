@@ -16,6 +16,7 @@ import BillingDashboard from "./pages/BillingDashboard";
 import PlanSettings from "./pages/PlanSettings";
 import HeaderUserbox from "./components/header/HeaderUserbox";
 import UserInvitation from "./pages/UserInvitation";
+import { UserProvider } from "./contexts/UserContext";
 
 const AppContent = () => {
   const location = useLocation();
@@ -52,7 +53,9 @@ const AppContent = () => {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </BrowserRouter>
   );
 }

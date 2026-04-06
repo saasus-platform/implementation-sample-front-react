@@ -26,6 +26,10 @@ const formatAttributeValue = (value: any): string => {
   return String(value);
 };
 
+const getUserDisplayId = (email?: string, signInId?: string): string => {
+  return email?.trim() || signInId?.trim() || "　";
+};
+
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [userinfo, setUserinfo] = useState<UserInfo | null>(null);
@@ -191,7 +195,10 @@ const UserPage = () => {
               <span className="font-medium text-gray-600">
                 メールアドレス：
               </span>
-              <span>{userinfo?.email || "未設定"}</span>
+              <span>
+                {getUserDisplayId(userinfo?.email, userinfo?.sign_in_id) ||
+                  "未設定"}
+              </span>
             </div>
           </div>
           <div className="flex flex-col">
@@ -232,7 +239,7 @@ const UserPage = () => {
                   名前
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  メールアドレス
+                  メールアドレス / ログインID
                 </th>
                 {userAttributes &&
                   Object.keys(userAttributes).map((key) => (
@@ -252,7 +259,9 @@ const UserPage = () => {
                   <td className="py-3 px-4">{user.tenant_id}</td>
                   <td className="py-3 px-4">{user.id}</td>
                   <td className="py-3 px-4">{user.attributes?.name ?? "　"}</td>
-                  <td className="py-3 px-4">{user.email}</td>
+                  <td className="py-3 px-4">
+                    {getUserDisplayId(user.email, user.sign_in_id)}
+                  </td>
                   {userAttributes &&
                     Object.keys(userAttributes).map((key) => {
                       const attribute = userAttributes[key];
