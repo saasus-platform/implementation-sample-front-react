@@ -236,7 +236,26 @@ const SelfSignup = () => {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">サインアップ</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">セルフサインアップ画面</h1>
+        
+        <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <h2 className="text-lg font-semibold mb-2 text-gray-800">【機能説明】</h2>
+          <p className="text-sm text-gray-700 mb-2">
+            本画面は、セルフサインアップ処理のサンプルになります。
+          </p>
+          <p className="text-sm text-gray-700 mb-2">
+            ログインユーザーが以下のいずれかの状態である場合に表示されます。
+          </p>
+          <ul className="list-disc list-inside ml-4 text-sm text-gray-700 mb-2">
+            <li>未所属： どのテナントにも紐付いていない状態</li>
+            <li>役割未設定： テナントには属しているが、役割（Role）が割り当てられていない状態</li>
+          </ul>
+          <p className="text-sm text-gray-700">
+            この状態を「新規テナントのオーナー候補」とみなし、<br />
+            以下のフォーム送信時に SaaSus SDK を介してテナント作成<br />
+            およびテナント管理者の権限付与を実行する実装例となっています。
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-4">
