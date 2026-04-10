@@ -1,6 +1,8 @@
 import axios from "axios";
 import { API_ENDPOINT, LOGIN_URL } from "./const";
 
+const ACCESS_TOKEN_REQUIRED_PATHS = ["/mfa_setup", "/mfa_verify", "/user_invitation"];
+
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -18,15 +20,27 @@ const processQueue = (error: any = null) => {
   failedQueue = [];
 };
 
+const decodeJwtPayload = (token: string): Record<string, unknown> => {
+  const base64Url = token.split(".")[1];
+  if (!base64Url) {
+    throw new Error("Invalid JWT payload");
+  }
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const paddedBase64 = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "="
+  );
+  const binary = window.atob(paddedBase64);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  const json = new TextDecoder().decode(bytes);
+  return JSON.parse(json) as Record<string, unknown>;
+};
+
 const isTokenExpired = (token: string): boolean => {
   try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(
-      decodeURIComponent(escape(window.atob(base64)))
-    );
+    const decoded = decodeJwtPayload(token);
     const expireDate = decoded["exp"] as number;
-    const timestamp = parseInt(Date.now().toString().slice(0, 10));
+    const timestamp = Math.floor(Date.now() / 1000);
     return expireDate <= timestamp;
   } catch {
     return true;
@@ -101,14 +115,14 @@ axios.interceptors.request.use(
     }
 
     // アクセストークンが必要なエンドポイントにのみセット
-    const ACCESS_TOKEN_REQUIRED_PATHS = [
-      "/mfa_setup",
-      "/mfa_verify",
-      "/user_invitation",
-    ];
-    const needsAccessToken = ACCESS_TOKEN_REQUIRED_PATHS.some((path) =>
-      config.url?.includes(path)
-    );
+    const needsAccessToken = ACCESS_TOKEN_REQUIRED_PATHS.some((path) => {
+      try {
+        const pathname = new URL(config.url!, window.location.origin).pathname;
+        return pathname === path;
+      } catch {
+        return false;
+      }
+    });
     if (needsAccessToken) {
       const accessToken = localStorage.getItem("SaaSusAccessToken");
       if (accessToken && config.headers) {
