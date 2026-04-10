@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import {
-  idTokenCheck,
   randomUnixBetween,
   navigateToUserPageByRole,
 } from "../utils";
@@ -44,13 +43,11 @@ const BillingDashboard = () => {
     return [404, 501, 502, 503, 504].includes(err.response.status);
   };
   const navigate = useNavigate();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
   const getMeteringActionHeaders = (
@@ -268,16 +265,12 @@ const BillingDashboard = () => {
   };
 
   useEffect(() => {
-    if (jwtToken && tenantId) {
+    if (tenantId) {
       fetchPeriodOptions();
     }
-  }, [jwtToken, tenantId]);
+  }, [tenantId]);
   useEffect(() => {
-    const initializePage = async () => {
-      await idTokenCheck(jwtToken);
-      await getUserinfo();
-    };
-    initializePage();
+    getUserinfo();
   }, []);
 
   useEffect(() => {

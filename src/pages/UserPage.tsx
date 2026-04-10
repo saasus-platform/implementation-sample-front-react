@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck } from "../utils";
 import {
   User,
   UserInfo,
@@ -43,13 +42,11 @@ const UserPage = () => {
   const [tenantUserInfo, setTenantUserInfo] = useState<Tenant | null>(null);
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [roleName, setRoleName] = useState<string>("");
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
   const getActionHeaders = (actionName: string) => {
@@ -149,7 +146,6 @@ const UserPage = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
-      await idTokenCheck(jwtToken);
       getUsers(tenantIdFromQuery);
       GetUserinfo(tenantIdFromQuery);
       GetUserAttributes();
@@ -304,36 +300,36 @@ const UserPage = () => {
           <h2 className="text-lg font-semibold mb-4 text-gray-800">管理機能</h2>
           <div className="space-y-3">
             <div>
-              <a
-                href={`/billing?tenant_id=${tenantId}`}
+              <Link
+                to={`/billing?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 課金情報
-              </a>
+              </Link>
             </div>
             <div>
-              <a
-                href={`/user_register?tenant_id=${tenantId}`}
+              <Link
+                to={`/user_register?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 ユーザー新規登録
-              </a>
+              </Link>
             </div>
             <div>
-              <a
-                href={`/delete_user_log?tenant_id=${tenantId}`}
+              <Link
+                to={`/delete_user_log?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 ユーザー削除ログ
-              </a>
+              </Link>
             </div>
             <div className="flex items-start">
-              <a
-                href={`/user_invitation?tenant_id=${tenantId}`}
+              <Link
+                to={`/user_invitation?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 ユーザー招待
-              </a>
+              </Link>
               <span className="ml-2 text-red-600 text-sm">
                 ※ユーザー招待機能を利用するには、SaaSus Platform
                 でドメイン名を設定し、DNS
@@ -341,12 +337,12 @@ const UserPage = () => {
               </span>
             </div>
             <div>
-              <a
-                href={`/plan-settings?tenant_id=${tenantId}`}
+              <Link
+                to={`/plan-settings?tenant_id=${tenantId}`}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 プラン設定
-              </a>
+              </Link>
             </div>
 
           </div>
@@ -358,12 +354,12 @@ const UserPage = () => {
         {/* テナント一覧に戻るリンク（複数テナントに所属している場合のみ表示） */}
         {userinfo && userinfo.tenants && userinfo.tenants.length > 1 && (
           <div>
-            <a
-              href="/tenants"
+            <Link
+              to="/tenants"
               className="text-blue-600 hover:text-blue-800 hover:underline"
             >
               テナント一覧に戻る
-            </a>
+            </Link>
           </div>
         )}
         
