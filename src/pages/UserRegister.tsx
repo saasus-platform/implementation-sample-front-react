@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import {
   UserAttribute,
@@ -233,12 +233,12 @@ const UserRegister = () => {
       </div>
 
       <div className="mt-4 text-center">
-        <a
-          href={`/admin/toppage?tenant_id=${tenantId}`}
+        <Link
+          to={`/admin/toppage?tenant_id=${tenantId}`}
           className="text-blue-600 hover:text-blue-800 hover:underline"
         >
           ユーザー一覧に戻る
-        </a>
+        </Link>
       </div>
     </div>
   );

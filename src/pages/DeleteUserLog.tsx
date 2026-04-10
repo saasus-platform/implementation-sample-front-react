@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
 import { DeletedUser, UserInfo } from "../types";
 
@@ -116,12 +116,12 @@ const DeleteUserLog = () => {
       </div>
 
       <div className="mt-4">
-        <a
-          href={`/admin/toppage?tenant_id=${tenantId}`}
+        <Link
+          to={`/admin/toppage?tenant_id=${tenantId}`}
           className="text-blue-600 hover:text-blue-800 hover:underline"
         >
           ユーザー一覧に戻る
-        </a>
+        </Link>
       </div>
     </div>
   );

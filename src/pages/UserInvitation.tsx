@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
 import { ApiError, Invitation } from "../types";
 
@@ -73,9 +73,9 @@ const UserInvitation = () => {
           withCredentials: true,
         }
       );
-      // リダイレクトはaxiosの成功後に行う
       if (response.status === 200) {
-        window.location.href = `/user_invitation?tenant_id=${tenantId}`;
+        setEmail("");
+        getInvitations(tenantId);
       }
     } catch (err: unknown) {
       const error = err as ApiError;
@@ -211,12 +211,12 @@ const UserInvitation = () => {
 
       {/* ユーザー一覧に戻るリンク */}
       <div className="mt-4">
-        <a
-          href={`/admin/toppage?tenant_id=${tenantId}`}
+        <Link
+          to={`/admin/toppage?tenant_id=${tenantId}`}
           className="text-blue-600 hover:text-blue-800 hover:underline"
         >
           ユーザー一覧に戻る
-        </a>
+        </Link>
       </div>
     </div>
   );
