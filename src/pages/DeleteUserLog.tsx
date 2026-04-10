@@ -2,20 +2,17 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
-import { idTokenCheck } from "../utils";
 import { DeletedUser, UserInfo } from "../types";
 
 const DeleteUserLog = () => {
   const [deleteUsers, setDeleteUsers] = useState<DeletedUser[]>([]);
   const [userinfo, setUserinfo] = useState<UserInfo | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
   // ユーザー削除ログを取得
@@ -62,7 +59,6 @@ const DeleteUserLog = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
-      await idTokenCheck(jwtToken);
       await GetUserinfo();
     };
     startUserPage();

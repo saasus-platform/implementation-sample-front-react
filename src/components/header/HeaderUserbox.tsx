@@ -1,6 +1,5 @@
 import { useState } from "react";
 import UserMfaSettingDialog from "../dialogs/UserMfaSettingDialog";
-import { idTokenCheck } from "../../utils";
 import { useUser } from "../../contexts/UserContext";
 
 const HeaderUserbox = () => {
@@ -12,9 +11,8 @@ const HeaderUserbox = () => {
     userInfo?.email?.trim() || userInfo?.sign_in_id?.trim() || "ユーザー";
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const openMfaDialog = async () => {
+  const openMfaDialog = () => {
     setMenuOpen(false);
-    await idTokenCheck(localStorage.getItem("SaaSusIdToken") as string);
     setMfaDialogOpen(true);
   };
 

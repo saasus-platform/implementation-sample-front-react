@@ -2,7 +2,6 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck } from "../utils";
 import {
   UserAttribute,
   TenantAttribute,
@@ -84,13 +83,11 @@ const SelfSignup = () => {
   const [tenantAttributeValues, setTenantAttributeValues] =
     useState<TenantAttributeValues>({});
   const navigate = useNavigate();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
 
@@ -149,11 +146,7 @@ const SelfSignup = () => {
   };
 
   useEffect(() => {
-    const startUserRegisterPage = async () => {
-      await idTokenCheck(jwtToken);
-      await Promise.all([GetUserAttributes(), GetTenantAttributes()]);
-    };
-    startUserRegisterPage();
+    Promise.all([GetUserAttributes(), GetTenantAttributes()]);
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {

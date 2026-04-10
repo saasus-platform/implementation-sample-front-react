@@ -1,8 +1,8 @@
 import axios from "axios";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
-import { idTokenCheck, navigateToUserPageByRole } from "../utils";
+import { navigateToUserPageByRole } from "../utils";
 import { Tenant } from "../types";
 import { PlanInfo, TaxRate, PricingPlan } from "../types/billing";
 import ErrorDialog from "../components/dialogs/ErrorDialog";
@@ -93,11 +93,8 @@ const PlanSettings = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const pagePath = location.pathname;
-  const jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
-
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath,
   };
 
@@ -306,7 +303,6 @@ const PlanSettings = () => {
       }
 
       setTenantId(tenantIdFromQuery);
-      await idTokenCheck(jwtToken);
       await getTenantInfo(tenantIdFromQuery);
       await getPricingPlans();
       await getTaxRates();

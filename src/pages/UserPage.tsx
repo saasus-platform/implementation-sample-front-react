@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck } from "../utils";
 import {
   User,
   UserInfo,
@@ -43,13 +42,11 @@ const UserPage = () => {
   const [tenantUserInfo, setTenantUserInfo] = useState<Tenant | null>(null);
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [roleName, setRoleName] = useState<string>("");
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
   const getActionHeaders = (actionName: string) => {
@@ -149,7 +146,6 @@ const UserPage = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
-      await idTokenCheck(jwtToken);
       getUsers(tenantIdFromQuery);
       GetUserinfo(tenantIdFromQuery);
       GetUserAttributes();
