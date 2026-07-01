@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../../const";
 import axios from "axios";
 import { QRCodeCanvas } from "qrcode.react";
-import { idTokenCheck } from "../../utils";
 import { ApiError, MfaSetupResponse, MfaStatusResponse } from "../../types";
 
 type Props = {
@@ -18,18 +17,11 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
   const [showQrCode, setShowQrCode] = useState(false); // QRコード表示フラグ
   const [isFeatureAvailable, setIsFeatureAvailable] = useState(true); // 機能が利用可能か
   const [error, setError] = useState("");
-  const [jwtToken, setJwtToken] = useState(
-    localStorage.getItem("SaaSusIdToken") as string
-  );
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("SaaSusAccessToken") as string | null
-  );
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
   const getActionHeaders = (actionName: string) => {
@@ -38,17 +30,10 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       "X-SaaSus-Referer": `${pagePath}?action=${actionName}`,
     };
   };
-  // ダイアログが開いた時にトークンをチェック＆最新のトークンをセット
   useEffect(() => {
-    const updateTokensAndCheckStatus = async () => {
-      await idTokenCheck(localStorage.getItem("SaaSusIdToken") as string);
-      setJwtToken(localStorage.getItem("SaaSusIdToken") as string);
-      setAccessToken(localStorage.getItem("SaaSusAccessToken"));
-      await checkMfaStatus();
-    };
     if (open) {
       setShowQrCode(false);
-      updateTokensAndCheckStatus();
+      checkMfaStatus();
     }
   }, [open]);
 
@@ -83,18 +68,11 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
 
   // QRコードを取得する
   const fetchMfaSetup = async () => {
-    if (!accessToken) {
-      setError("アクセストークンがありません");
-      return;
-    }
     try {
       const response = await axios.get<MfaSetupResponse>(
         `${API_ENDPOINT}/mfa_setup`,
         {
-          headers: {
-            ...commonHeaders,
-            "X-Access-Token": accessToken,
-          },
+          headers: commonHeaders,
           withCredentials: true,
         }
       );
@@ -113,19 +91,12 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
       setError("認証コードを入力してください");
       return;
     }
-    if (!accessToken) {
-      setError("アクセストークンがありません");
-      return;
-    }
     try {
       const response = await axios.post(
         `${API_ENDPOINT}/mfa_verify`,
         { verification_code: verificationCode },
         {
-          headers: {
-            ...getActionHeaders("mfa_verify"),
-            "X-Access-Token": accessToken,
-          },
+          headers: getActionHeaders("mfa_verify"),
           withCredentials: true,
         }
       );
@@ -197,10 +168,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
             {!showQrCode ? (
               <>
                 <button
-                  onClick={() => {
-                    fetchMfaSetup();
-                    setShowQrCode(true);
-                  }}
+                  onClick={fetchMfaSetup}
                   className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   デバイスを再登録
@@ -246,10 +214,7 @@ const UserMfaSettingDialog = ({ open, handleClose }: Props) => {
                   デバイスが設定されていません。有効にするにはデバイスを追加してください。
                 </p>
                 <button
-                  onClick={() => {
-                    fetchMfaSetup();
-                    setShowQrCode(true);
-                  }}
+                  onClick={fetchMfaSetup}
                   className="w-full py-3 bg-blue-600 text-white rounded-md mb-2 hover:bg-blue-700"
                 >
                   デバイスを追加する

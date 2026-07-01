@@ -12,11 +12,9 @@ const Auth = () => {
   // ログインユーザの情報を取得
   const getUserInfo = async () => {
     try {
-      const jwtToken = window.localStorage.getItem("SaaSusIdToken");
       const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          Authorization: `Bearer ${jwtToken}`,
           "X-SaaSus-Referer": location.pathname,
         },
         withCredentials: true,

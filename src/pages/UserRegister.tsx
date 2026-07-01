@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { API_ENDPOINT, LOGIN_URL } from "../const";
-import { idTokenCheck } from "../utils";
 import {
   UserAttribute,
   UserAttributeValues,
@@ -76,13 +75,11 @@ const UserRegister = () => {
   const [userAttributeValues, setUserAttributeValues] =
     useState<UserAttributeValues>({});
   const navigate = useNavigate();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
 
@@ -105,7 +102,6 @@ const UserRegister = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tenantIdFromQuery = urlParams.get("tenant_id");
       setTenantId(tenantIdFromQuery);
-      await idTokenCheck(jwtToken);
       GetUserAttributes();
     };
 
@@ -237,12 +233,12 @@ const UserRegister = () => {
       </div>
 
       <div className="mt-4 text-center">
-        <a
-          href={`/admin/toppage?tenant_id=${tenantId}`}
+        <Link
+          to={`/admin/toppage?tenant_id=${tenantId}`}
           className="text-blue-600 hover:text-blue-800 hover:underline"
         >
           ユーザー一覧に戻る
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -1,47 +1,6 @@
 import axios from "axios";
-import { API_ENDPOINT, LOGIN_URL } from "./const";
+import { API_ENDPOINT } from "./const";
 import { UserInfo, Tenant } from "./types";
-
-type Jwt = {
-  [name: string]: string | number | boolean;
-};
-
-const sleep = (second: number) =>
-  new Promise((resolve) => setTimeout(resolve, second * 1000));
-
-export const idTokenCheck = async (jwtToken: string) => {
-  const base64Url = jwtToken.split(".")[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const decoded = JSON.parse(
-    decodeURIComponent(escape(window.atob(base64)))
-  ) as Jwt;
-
-  const expireDate = decoded["exp"] as number;
-  const timestamp = parseInt(Date.now().toString().slice(0, 10));
-  if (expireDate <= timestamp) {
-    try {
-      console.log("token expired");
-      const res = await axios.get(`${API_ENDPOINT}/refresh`, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        withCredentials: true,
-      });
-
-      jwtToken = res.data.id_token;
-      localStorage.setItem("SaaSusIdToken", jwtToken);
-
-      const accessToken = res.data.access_token;
-      localStorage.setItem("SaaSusAccessToken", accessToken);
-
-      await sleep(1);
-      return;
-    } catch (err) {
-      console.log(err);
-      window.location.href = LOGIN_URL;
-    }
-  }
-};
 
 /**
  * 指定された UNIX タイムスタンプの範囲内でランダムな整数（秒）を返す
@@ -62,17 +21,15 @@ export const randomUnixBetween = (start: number, end: number): number => {
  * @param pagePath 現在のページパス
  */
 export const navigateToUserPageByRole = async (
-  tenantId: string, 
+  tenantId: string,
   navigate: (path: string) => void,
   pagePath: string
 ) => {
   try {
     // ロールの取得
-    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
     const res = await axios.get<UserInfo>(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
         "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,
@@ -102,4 +59,3 @@ export const navigateToUserPageByRole = async (
     navigate(`/user/toppage?tenant_id=${tenantId}`);
   }
 };
-

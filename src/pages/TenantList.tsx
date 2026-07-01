@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_ENDPOINT } from "../const";
-import { idTokenCheck, navigateToUserPageByRole } from "../utils";
+import { navigateToUserPageByRole } from "../utils";
 import { Tenant, UserInfo, TenantAttributesResponse } from "../types";
 
 // テナント属性の値を適切にフォーマットする関数
@@ -31,13 +31,11 @@ const TenantList = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [tenantInfo, setTenantInfo] = useState<any[]>([]);
   const navigate = useNavigate();
-  let jwtToken = window.localStorage.getItem("SaaSusIdToken") as string;
   const location = useLocation();
   const pagePath = location.pathname;
   // ページ内で共通して使用するヘッダーを定義
   const commonHeaders = {
     "X-Requested-With": "XMLHttpRequest",
-    Authorization: `Bearer ${jwtToken}`,
     "X-SaaSus-Referer": pagePath, // すべてのAPIでこの共通のパスを使用
   };
 
@@ -70,11 +68,7 @@ const TenantList = () => {
   };
 
   useEffect(() => {
-    const startTenantListPage = async () => {
-      await idTokenCheck(jwtToken);
-      GetUserinfo();
-    };
-    startTenantListPage();
+    GetUserinfo();
   }, []);
 
   return (
