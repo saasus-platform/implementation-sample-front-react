@@ -208,7 +208,7 @@ const BillingDashboard = () => {
         }
       );
       setBackendError(false);
-      if (res.data.length > 0) {
+      if (res.data && res.data.length > 0) {
         setPeriodOptions(res.data);
         const defaultPeriod = res.data[0];
         setSelectedPeriod({

@@ -153,10 +153,16 @@ export interface Invitation {
 
 
 /**
+ * MFA認証方式
+ */
+export type MfaMethod = "softwareToken" | "email";
+
+/**
  * MFAステータスレスポンスの型定義
  */
 export interface MfaStatusResponse {
   enabled: boolean;
+  method?: MfaMethod;
 }
 
 /**
