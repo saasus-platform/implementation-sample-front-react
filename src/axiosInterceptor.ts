@@ -64,8 +64,26 @@ const refreshToken = async (): Promise<string> => {
   return newIdToken;
 };
 
+const getTraceId = (): string => {
+  const key = "SaaSusTraceId";
+  try {
+    let traceId = sessionStorage.getItem(key);
+    if (!traceId) {
+      traceId = crypto.randomUUID();
+      sessionStorage.setItem(key, traceId);
+    }
+    return traceId;
+  } catch {
+    // sessionStorageが使えない場合は毎回新規生成
+    return crypto.randomUUID();
+  }
+};
+
 axios.interceptors.request.use(
   async (config) => {
+    // 全リクエストにTrace IDを付与
+    config.headers["X-Saasus-Trace-Id"] = getTraceId();
+
     // refresh と credentials エンドポイントはインターセプターをスキップ
     if (
       config.url?.includes("/refresh") ||
