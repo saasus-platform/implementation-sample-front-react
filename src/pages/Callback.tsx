@@ -36,11 +36,9 @@ const Callback = () => {
   // ロールによって遷移先を振り分け
   const navigateByRole = async () => {
     // ロールの取得
-    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
     const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
         "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,
@@ -62,11 +60,9 @@ const Callback = () => {
 
   // 遷移先判定
   const handleUserNavigation = async () => {
-    const jwtToken = window.localStorage.getItem("SaaSusIdToken");
     const res = await axios.get(`${API_ENDPOINT}/userinfo`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        Authorization: `Bearer ${jwtToken}`,
         "X-SaaSus-Referer": pagePath,
       },
       withCredentials: true,

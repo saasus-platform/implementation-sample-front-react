@@ -113,6 +113,7 @@ export interface User {
   id: string;
   tenant_id: string;
   email: string;
+  sign_in_id?: string;
   attributes?: UserAttributeValues;
 }
 
@@ -122,6 +123,8 @@ export interface User {
 export interface UserInfo {
   id?: string;
   email: string;
+  sign_in_id?: string;
+  user_attribute?: UserAttributeValues;
   tenants: Tenant[];
 }
 
@@ -150,10 +153,16 @@ export interface Invitation {
 
 
 /**
+ * MFA認証方式
+ */
+export type MfaMethod = "softwareToken" | "email";
+
+/**
  * MFAステータスレスポンスの型定義
  */
 export interface MfaStatusResponse {
   enabled: boolean;
+  method?: MfaMethod;
 }
 
 /**

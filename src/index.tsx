@@ -2,6 +2,7 @@ import axios from "axios";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import "./axiosInterceptor";
 
 const getTraceId = (): string => {
   const key = "SaaSusTraceId";
