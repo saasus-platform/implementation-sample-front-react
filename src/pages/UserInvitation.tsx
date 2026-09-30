@@ -1,8 +1,9 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
 import { ApiError, Invitation } from "../types";
+import { redirectToLogin } from "../pkce";
 
 const UserInvitation = () => {
   const [email, setEmail] = useState("");
@@ -40,7 +41,7 @@ const UserInvitation = () => {
       } else if (error.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
-        window.location.href = LOGIN_URL;
+        void redirectToLogin();
       }
     }
   };
@@ -87,7 +88,7 @@ const UserInvitation = () => {
       } else if (error.response.status === 404) {
         setError("この機能はまだ実装されていません。");
       } else {
-        window.location.href = LOGIN_URL;
+        void redirectToLogin();
       }
     }
   };

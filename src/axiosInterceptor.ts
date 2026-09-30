@@ -1,5 +1,6 @@
 import axios from "axios";
-import { API_ENDPOINT, LOGIN_URL } from "./const";
+import { API_ENDPOINT } from "./const";
+import { redirectToLogin } from "./pkce";
 
 const ACCESS_TOKEN_REQUIRED_PATHS = ["/mfa_setup", "/mfa_verify", "/user_invitation"];
 
@@ -91,7 +92,8 @@ axios.interceptors.request.use(
         } catch (error) {
           isRefreshing = false;
           processQueue(error);
-          window.location.href = LOGIN_URL;
+          // PKCE: リフレッシュ失敗時も challenge付きでログイン画面へ
+          void redirectToLogin();
           return Promise.reject(error);
         }
       } else {

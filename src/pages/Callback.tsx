@@ -1,8 +1,9 @@
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { consumePkceCodeVerifier, redirectToLogin } from "../pkce";
 
 const Callback = () => {
   const location = useLocation();
@@ -10,16 +11,24 @@ const Callback = () => {
   const navigate = useNavigate();
   const code = new URLSearchParams(location.search).get("code");
   const [, setCookie] = useCookies(["SaaSusRefreshToken"]);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // JWTを取得してLocal Storageに保存
-  const getToken = async () => {
-    // JWT取得
-    const res = await axios.get(`${API_ENDPOINT}/credentials?code=${code}`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
+  // 一時コード + code_verifier を送信してJWTを取得し、Local Storageに保存
+  const getToken = async (temporaryCode: string, codeVerifier: string) => {
+    // PKCE: 一時コードと code_verifier を POST して認証情報へ交換
+    const res = await axios.post(
+      `${API_ENDPOINT}/credentials`,
+      {
+        code: temporaryCode,
+        code_verifier: codeVerifier,
       },
-      withCredentials: true,
-    });
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        withCredentials: true,
+      }
+    );
     // JWTをLocal Storageに保存
     const idToken = res.data.id_token;
     localStorage.setItem("SaaSusIdToken", idToken);
@@ -83,18 +92,51 @@ const Callback = () => {
 
   useEffect(() => {
     const startCallback = async () => {
-      if (code) {
-        await getToken();
+      // 保持していた code_verifier を取り出す（取り出し後は破棄される）
+      const codeVerifier = consumePkceCodeVerifier();
+
+      // 一時コードまたは code_verifier が無ければ、challengeを付け直してログインへ
+      if (!code || !codeVerifier) {
+        await redirectToLogin();
+        return;
+      }
+
+      try {
+        await getToken(code, codeVerifier);
+      } catch (error) {
+        // 401（PKCE検証失敗など）はエラー表示、それ以外はログインへ戻す
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          setErrorMessage("認証エラー");
+          return;
+        }
+        await redirectToLogin();
+        return;
+      }
+
+      try {
         await handleUserNavigation();
-      } else {
-        window.location.href = LOGIN_URL;
+      } catch {
+        await redirectToLogin();
       }
     };
 
-    startCallback();
+    void startCallback();
   }, []);
 
-  return <></>;
+  if (!errorMessage) {
+    return <></>;
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+      <div
+        role="alert"
+        className="max-w-xl rounded-lg border border-red-300 bg-red-50 p-6 text-center text-red-700 shadow-sm"
+      >
+        {errorMessage}
+      </div>
+    </main>
+  );
 };
 
 export default Callback;

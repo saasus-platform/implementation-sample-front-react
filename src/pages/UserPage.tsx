@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { redirectToLogin } from "../pkce";
 import {
   User,
   UserInfo,
@@ -131,7 +132,8 @@ const UserPage = () => {
 
       const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
       if (loginUrl.startsWith("http")) {
-        window.location.href = loginUrl;
+        // PKCE: 再ログインに備え code_verifier を生成・保持し challenge付きで遷移
+        void redirectToLogin();
       } else {
         navigate(loginUrl);
       }
@@ -168,7 +170,7 @@ const UserPage = () => {
       getUsers(tenantId);
     } catch (error) {
       console.error("Error deleting user:", error);
-      window.location.href = LOGIN_URL;
+      void redirectToLogin();
     }
   };
 

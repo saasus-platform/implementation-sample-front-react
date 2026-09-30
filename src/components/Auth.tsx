@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
 import { useUser } from "../contexts/UserContext";
 import { UserInfo } from "../types";
+import { redirectToLogin } from "../pkce";
 
 const Auth = () => {
   const location = useLocation();
@@ -30,7 +31,8 @@ const Auth = () => {
       // ログインユーザの情報が取得できない（ログインが確認できない）場合、ログイン画面に遷移
       if (!res) {
         setUserInfo(null);
-        window.location.href = LOGIN_URL;
+        // PKCE: code_verifier を生成・保持し、code_challenge付きでログイン画面へ
+        void redirectToLogin();
         return;
       }
 
