@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { startLogin } from "../authFlow";
 import {
   UserAttribute,
   UserAttributeValues,
@@ -143,7 +144,7 @@ const UserRegister = () => {
       navigate(`/admin/toppage?tenant_id=${tenantId}`);
     } catch (error) {
       console.error("Error registering user:", error);
-      window.location.href = LOGIN_URL;
+      startLogin();
     }
   };
 

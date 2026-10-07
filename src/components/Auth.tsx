@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { startLogin } from "../authFlow";
 import { useUser } from "../contexts/UserContext";
 import { UserInfo } from "../types";
 
@@ -30,7 +31,7 @@ const Auth = () => {
       // ログインユーザの情報が取得できない（ログインが確認できない）場合、ログイン画面に遷移
       if (!res) {
         setUserInfo(null);
-        window.location.href = LOGIN_URL;
+        startLogin();
         return;
       }
 

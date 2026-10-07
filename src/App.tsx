@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Auth from "./components/Auth";
 import Callback from "./pages/Callback";
+import Login from "./pages/Login";
 import UserPage from "./pages/UserPage";
 import TenantList from "./pages/TenantList";
 import UserRegister from "./pages/UserRegister";
@@ -22,7 +23,7 @@ const AppContent = () => {
   const location = useLocation();
 
   // ヘッダーを非表示にするページのリスト
-  const noHeaderPages = ["/callback"];
+  const noHeaderPages = ["/callback", "/login"];
 
   // 現在のページが `noHeaderPages` に含まれていない場合のみヘッダーを表示
   const showHeader = !noHeaderPages.includes(location.pathname);
@@ -32,6 +33,7 @@ const AppContent = () => {
       {showHeader && <HeaderUserbox />}
       <Routes>
         <Route path="/callback" element={<Callback />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Navigate to="/tenants" replace />} />
         <Route path="/" element={<Auth />}>
           <Route path="/tenants" element={<TenantList />} />

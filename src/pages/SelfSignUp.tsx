@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { startLogin } from "../authFlow";
 import {
   UserAttribute,
   TenantAttribute,
@@ -202,7 +203,7 @@ const SelfSignup = () => {
       await navigateByRole(userInfo);
     } catch (error) {
       console.error("Error during self-signup or navigation:", error);
-      window.location.href = LOGIN_URL;
+      startLogin();
     }
   };
 
