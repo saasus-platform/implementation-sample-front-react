@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { startLogin } from "../authFlow";
 import {
   User,
   UserInfo,
@@ -129,12 +130,8 @@ const UserPage = () => {
       window.localStorage.removeItem("SaaSusRefreshToken");
       window.localStorage.removeItem("SaaSusAccessToken");
 
-      const loginUrl = process.env.REACT_APP_LOGIN_URL || "/login";
-      if (loginUrl.startsWith("http")) {
-        window.location.href = loginUrl;
-      } else {
-        navigate(loginUrl);
-      }
+      // 直近の方式でログインを再開する（通常ログイン or PKCE）
+      startLogin();
     } catch (error) {
       console.error("ログアウトに失敗しました:", error);
     }
@@ -168,7 +165,7 @@ const UserPage = () => {
       getUsers(tenantId);
     } catch (error) {
       console.error("Error deleting user:", error);
-      window.location.href = LOGIN_URL;
+      startLogin();
     }
   };
 

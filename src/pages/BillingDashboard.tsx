@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { API_ENDPOINT, LOGIN_URL } from "../const";
+import { API_ENDPOINT } from "../const";
+import { startLogin } from "../authFlow";
 import {
   randomUnixBetween,
   navigateToUserPageByRole,
@@ -95,7 +96,7 @@ const BillingDashboard = () => {
       }
     } catch (error) {
       console.error("Error fetching user info:", error);
-      window.location.href = LOGIN_URL;
+      startLogin();
     }
   };
   // 課金データを取得し、メータリングの重複を排除して state を更新
